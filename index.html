@@ -12,6 +12,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            /* 圖片不再強制像素化，保持自然平滑 */
         }
 
         html, body {
@@ -35,7 +36,7 @@
             background: #e2f6d4;  /* 淺綠基底 */
             z-index: -2;
         }
-        /* 輕度像素網格：使用柔和草綠 #b6e4a8 做點綴 (用量第二多) */
+        /* 輕度像素網格：使用柔和草綠 #b6e4a8 做點綴 (用量第二多)，降低不透明度讓圖片更自然 */
         .cyber-bg::after {
             content: "";
             position: fixed;
@@ -46,8 +47,8 @@
             background-image: 
                 linear-gradient(to right, #b6e4a8 1px, transparent 1px),
                 linear-gradient(to bottom, #b6e4a8 1px, transparent 1px);
-            background-size: 24px 24px;
-            opacity: 0.35;
+            background-size: 28px 28px;
+            opacity: 0.2;
             pointer-events: none;
             z-index: -1;
         }
@@ -59,20 +60,20 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at 50% 50%, rgba(116, 201, 159, 0.25) 0%, transparent 70%);
+            background: radial-gradient(circle at 50% 50%, rgba(116, 201, 159, 0.2) 0%, transparent 70%);
             animation: energyPulse 4s ease-in-out infinite;
             pointer-events: none;
             z-index: -1;
         }
 
-        /* 掃描線：深海松葉綠，低調像素感 */
+        /* 掃描線：深海松葉綠，降低強度避免干擾圖片 */
         .scan-line {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: repeating-linear-gradient(0deg, rgba(75, 143, 125, 0.06) 0px, rgba(75, 143, 125, 0.06) 2px, transparent 2px, transparent 8px);
+            background: repeating-linear-gradient(0deg, rgba(75, 143, 125, 0.05) 0px, rgba(75, 143, 125, 0.05) 2px, transparent 2px, transparent 10px);
             pointer-events: none;
             z-index: 10;
         }
@@ -206,14 +207,14 @@
             border: 3px solid #74c99f;
             overflow: hidden;
             margin-bottom: 12px;
-            image-rendering: auto;  /* 圖片保持平滑自然 */
+            image-rendering: auto;  /* 圖片保持自然平滑 */
         }
         .image-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
-            image-rendering: auto;
+            image-rendering: auto;  /* 確保圖片無像素化濾鏡 */
         }
         .placeholder {
             width: 100%;
@@ -353,8 +354,8 @@
         .toast.show { display: block; animation: fadeIn 0.2s ease; }
 
         @keyframes energyPulse {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.02); }
+            0%, 100% { opacity: 0.25; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.02); }
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
