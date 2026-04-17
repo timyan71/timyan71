@@ -12,7 +12,6 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            /* 圖片不再強制像素化，保持自然平滑 */
         }
 
         html, body {
@@ -21,22 +20,21 @@
             overflow: hidden;
             position: fixed;
             font-family: 'Press Start 2P', 'VT323', monospace;
-            background: #e2f6d4;  /* 1. 嫩葉淺綠色作為背景主色調 (最多) */
-            color: #4b8f7d;       /* 4. 深海松葉綠作為主要文字色 (最少) */
+            background: #e2f6d4;
+            color: #4b8f7d;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 清新綠色背景層次：淺綠基底，加入柔和草綠的網格裝飾 */
         .cyber-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #e2f6d4;  /* 淺綠基底 */
+            background: #e2f6d4;
             z-index: -2;
         }
-        /* 輕度像素網格：使用柔和草綠 #b6e4a8 做點綴 (用量第二多)，降低不透明度讓圖片更自然 */
+
         .cyber-bg::after {
             content: "";
             position: fixed;
@@ -53,7 +51,6 @@
             z-index: -1;
         }
 
-        /* 能量波動: 使用薄荷綠 #74c99f 為主 (用量第三) */
         .energy-wave {
             position: fixed;
             top: 0;
@@ -66,7 +63,6 @@
             z-index: -1;
         }
 
-        /* 掃描線：深海松葉綠，降低強度避免干擾圖片 */
         .scan-line {
             position: fixed;
             top: 0;
@@ -92,14 +88,13 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* 像素風格邊框 */
         .status-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 14px 18px;
-            background: #e2f6d4;  /* 淺綠基底 */
-            border: 4px solid #74c99f; /* 薄荷綠邊框 */
+            background: #e2f6d4;
+            border: 4px solid #74c99f;
             margin-bottom: 18px;
             position: relative;
             flex-shrink: 0;
@@ -110,7 +105,7 @@
             position: absolute;
             top: -12px;
             left: 12px;
-            background: #74c99f;  /* 薄荷綠 */
+            background: #74c99f;
             padding: 0 8px;
             color: #e2f6d4;
             font-size: 10px;
@@ -207,14 +202,14 @@
             border: 3px solid #74c99f;
             overflow: hidden;
             margin-bottom: 12px;
-            image-rendering: auto;  /* 圖片保持自然平滑 */
+            image-rendering: auto;
         }
         .image-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
-            image-rendering: auto;  /* 確保圖片無像素化濾鏡 */
+            image-rendering: auto;
         }
         .placeholder {
             width: 100%;
@@ -256,7 +251,6 @@
         .meter-fill.medium { background: #b6e4a8; }
         .meter-fill.low { background: #4b8f7d; }
 
-        /* 像素風格按鈕：以薄荷綠和柔和草綠為主 */
         .btn {
             width: 100%;
             padding: 14px;
@@ -286,6 +280,18 @@
             transform: none;
             cursor: not-allowed;
             filter: grayscale(0.1);
+        }
+
+        /* 特別按鈕樣式 - 書蟲按鈕 */
+        .btn-bookworm {
+            background: #4b8f7d;
+            border-color: #e2f6d4;
+            box-shadow: inset 0 0 0 1px #b6e4a8, 3px 3px 0 #b6e4a8;
+            margin-top: 20px;
+        }
+        .btn-bookworm:active {
+            background: #74c99f;
+            transform: translate(2px, 2px);
         }
 
         #video {
@@ -369,7 +375,6 @@
         #cameraStatus.online { color: #4b8f7d; font-weight: bold; }
         #cameraStatus.offline { color: #74c99f; background: #e2f6d4; display: inline-block; padding: 2px 6px; }
 
-        /* 滾動條風格 */
         ::-webkit-scrollbar {
             width: 12px;
             background: #e2f6d4;
@@ -435,6 +440,8 @@
 
         <div class="bottom-buttons">
             <button class="btn" id="nextLevelBtn" onclick="nextLevel()" style="display:none">⏭ NEXT LEVEL</button>
+            <!-- 書蟲小遊戲按鈕：完成所有關卡後顯示 -->
+            <button class="btn btn-bookworm" id="bookwormGameBtn" onclick="goToBookwormGame()" style="display:none">🐛 RUN WITH 書蟲 !</button>
         </div>
         
         <div class="area-card" id="studyIntroCard">
@@ -449,7 +456,7 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        // ========== 第四關卡設定（完全保留原始遊戲邏輯，僅色彩主題變更）==========
+        // ========== 第四關卡設定 ==========
         const LEVEL_IMAGES = [
             "https://i.postimg.cc/w3WzMJNS/IMG-9822.jpg",
             "https://i.postimg.cc/N20wbG3D/IMG-9824.jpg",
@@ -484,7 +491,8 @@
             currentSimilarity: 0,
             isSubmitted: false,
             levelCompleted: false,
-            gameActive: false
+            gameActive: false,
+            allLevelsCompleted: false   // 新增：追蹤是否已完成全部關卡
         };
         
         const video = document.getElementById('video');
@@ -497,6 +505,7 @@
         const takePhotoBtn = document.getElementById('takePhotoBtn');
         const submitBtn = document.getElementById('submitBtn');
         const nextLevelBtn = document.getElementById('nextLevelBtn');
+        const bookwormGameBtn = document.getElementById('bookwormGameBtn');
         const timerDisplay = document.getElementById('timer');
         const levelInfo = document.getElementById('levelInfo');
         const energyFill = document.getElementById('energyFill');
@@ -505,6 +514,14 @@
         const locationHeader = document.getElementById('locationHeader');
         const challengeArea = document.getElementById('challengeArea');
         const cameraArea = document.getElementById('cameraArea');
+        
+        // 跳轉到書蟲小遊戲
+        function goToBookwormGame() {
+            showToast("🐛 LOADING BOOKWORM GAME...");
+            setTimeout(() => {
+                window.location.href = 'lilgame.html';
+            }, 500);
+        }
         
         async function startMatching() {
             studyIntroCard.style.display = 'none';
@@ -650,10 +667,19 @@
             takePhotoBtn.disabled = true;
             submitBtn.disabled = true;
             if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+            
             if (gameState.currentLevel === 5) {
-                if (gameState.energy <= 0) showToast("🏆 ALL LEVELS CLEARED! NEGATIVE ENERGY ELIMINATED!");
+                // 所有關卡完成！
+                gameState.allLevelsCompleted = true;
+                if (gameState.energy <= 0) {
+                    showToast("🏆 ALL LEVELS CLEARED! NEGATIVE ENERGY ELIMINATED!");
+                } else {
+                    showToast("🎉 CONGRATULATIONS! MISSION COMPLETE!");
+                }
                 nextLevelBtn.textContent = "🏆 FINISH";
                 nextLevelBtn.style.display = 'block';
+                // 顯示書蟲小遊戲按鈕
+                bookwormGameBtn.style.display = 'block';
             } else {
                 nextLevelBtn.style.display = 'block';
                 nextLevelBtn.textContent = "⏭ NEXT LEVEL";
@@ -669,6 +695,12 @@
         }
         
         function nextLevel() {
+            // 如果所有關卡已完成，點擊完成按鈕只顯示提示，不跳關
+            if (gameState.allLevelsCompleted) {
+                showToast("🎉 ALL MISSIONS DONE! TRY THE BOOKWORM GAME!");
+                return;
+            }
+            
             if (gameState.currentLevel < 5) {
                 gameState.currentLevel++;
                 gameState.isSubmitted = false;
@@ -682,8 +714,11 @@
                 takePhotoBtn.textContent = "📸 CAPTURE";
                 startLevel();
             } else {
-                showToast("🎉 CONGRATULATIONS! MISSION COMPLETE!");
-                setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+                // 這個分支理論上不會進來，因為 currentLevel === 5 時已在 submitMatch 處理
+                gameState.allLevelsCompleted = true;
+                bookwormGameBtn.style.display = 'block';
+                nextLevelBtn.textContent = "🏆 COMPLETE";
+                showToast("🎉 MISSION ACCOMPLISHED!");
             }
         }
         
