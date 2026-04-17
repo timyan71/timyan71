@@ -294,6 +294,13 @@
             transform: translate(2px, 2px);
         }
 
+        /* 重試按鈕樣式 */
+        .btn-retry {
+            background: #b6e4a8;
+            color: #4b8f7d;
+            border-color: #4b8f7d;
+        }
+
         #video {
             width: 100%;
             height: 100%;
@@ -439,7 +446,8 @@
         </div>
 
         <div class="bottom-buttons">
-            <button class="btn" id="nextLevelBtn" onclick="nextLevel()" style="display:none">⏭ NEXT LEVEL</button>
+            <!-- 重試按鈕 (超時時顯示) -->
+            <button class="btn btn-retry" id="retryLevelBtn" onclick="retryCurrentLevel()" style="display:none">🔄 RETRY LEVEL</button>
             <!-- 書蟲小遊戲按鈕：完成所有關卡後顯示 -->
             <button class="btn btn-bookworm" id="bookwormGameBtn" onclick="goToBookwormGame()" style="display:none">🐛 RUN WITH 書蟲 !</button>
         </div>
@@ -492,7 +500,7 @@
             isSubmitted: false,
             levelCompleted: false,
             gameActive: false,
-            allLevelsCompleted: false   // 新增：追蹤是否已完成全部關卡
+            allLevelsCompleted: false
         };
         
         const video = document.getElementById('video');
@@ -504,7 +512,7 @@
         const similarityText = document.getElementById('similarityText');
         const takePhotoBtn = document.getElementById('takePhotoBtn');
         const submitBtn = document.getElementById('submitBtn');
-        const nextLevelBtn = document.getElementById('nextLevelBtn');
+        const retryLevelBtn = document.getElementById('retryLevelBtn');
         const bookwormGameBtn = document.getElementById('bookwormGameBtn');
         const timerDisplay = document.getElementById('timer');
         const levelInfo = document.getElementById('levelInfo');
@@ -521,6 +529,22 @@
             setTimeout(() => {
                 window.location.href = 'lilgame.html';
             }, 500);
+        }
+        
+        // 重試當前關卡
+        function retryCurrentLevel() {
+            if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+            gameState.isSubmitted = false;
+            gameState.levelCompleted = false;
+            gameState.currentPhoto = null;
+            gameState.currentSimilarity = 0;
+            similarityMeter.style.display = 'none';
+            submitBtn.disabled = true;
+            retryLevelBtn.style.display = 'none';
+            takePhotoBtn.disabled = false;
+            takePhotoBtn.textContent = "📸 CAPTURE";
+            startTimer(LEVEL_TIMES[gameState.currentLevel - 1]);
+            showToast("🔄 RETRYING LEVEL...");
         }
         
         async function startMatching() {
@@ -570,7 +594,7 @@
             similarityMeter.style.display = 'none';
             submitBtn.disabled = true;
             submitBtn.style.display = 'block';
-            nextLevelBtn.style.display = 'none';
+            retryLevelBtn.style.display = 'none';
             takePhotoBtn.disabled = false;
             takePhotoBtn.textContent = "📸 CAPTURE";
             startTimer(timeLimit);
@@ -606,8 +630,8 @@
             gameState.levelCompleted = true;
             takePhotoBtn.disabled = true;
             submitBtn.disabled = true;
-            nextLevelBtn.style.display = 'block';
-            nextLevelBtn.textContent = "🔄 RETRY LEVEL";
+            submitBtn.style.display = 'none';
+            retryLevelBtn.style.display = 'block';
         }
         
         function takePhoto() {
@@ -666,6 +690,7 @@
             gameState.levelCompleted = true;
             takePhotoBtn.disabled = true;
             submitBtn.disabled = true;
+            submitBtn.style.display = 'none';
             if (gameState.timerInterval) clearInterval(gameState.timerInterval);
             
             if (gameState.currentLevel === 5) {
@@ -676,13 +701,28 @@
                 } else {
                     showToast("🎉 CONGRATULATIONS! MISSION COMPLETE!");
                 }
-                nextLevelBtn.textContent = "🏆 FINISH";
-                nextLevelBtn.style.display = 'block';
-                // 顯示書蟲小遊戲按鈕
+                // 顯示書蟲小遊戲按鈕，不顯示任何 Finish 按鈕
                 bookwormGameBtn.style.display = 'block';
             } else {
-                nextLevelBtn.style.display = 'block';
-                nextLevelBtn.textContent = "⏭ NEXT LEVEL";
+                // 前往下一關
+                goToNextLevel();
+            }
+        }
+        
+        function goToNextLevel() {
+            if (gameState.currentLevel < 5) {
+                gameState.currentLevel++;
+                gameState.isSubmitted = false;
+                gameState.levelCompleted = false;
+                gameState.currentPhoto = null;
+                gameState.currentSimilarity = 0;
+                similarityMeter.style.display = 'none';
+                submitBtn.disabled = true;
+                submitBtn.style.display = 'block';
+                retryLevelBtn.style.display = 'none';
+                takePhotoBtn.disabled = false;
+                takePhotoBtn.textContent = "📸 CAPTURE";
+                startLevel();
             }
         }
         
@@ -692,34 +732,6 @@
             energyPercent.textContent = Math.floor(val) + '%';
             if (val <= 30) energyFill.style.background = "repeating-linear-gradient(90deg, #74c99f, #b6e4a8)";
             if (val <= 10) energyFill.style.background = "#74c99f";
-        }
-        
-        function nextLevel() {
-            // 如果所有關卡已完成，點擊完成按鈕只顯示提示，不跳關
-            if (gameState.allLevelsCompleted) {
-                showToast("🎉 ALL MISSIONS DONE! TRY THE BOOKWORM GAME!");
-                return;
-            }
-            
-            if (gameState.currentLevel < 5) {
-                gameState.currentLevel++;
-                gameState.isSubmitted = false;
-                gameState.levelCompleted = false;
-                gameState.currentPhoto = null;
-                gameState.currentSimilarity = 0;
-                similarityMeter.style.display = 'none';
-                submitBtn.disabled = true;
-                nextLevelBtn.style.display = 'none';
-                takePhotoBtn.disabled = false;
-                takePhotoBtn.textContent = "📸 CAPTURE";
-                startLevel();
-            } else {
-                // 這個分支理論上不會進來，因為 currentLevel === 5 時已在 submitMatch 處理
-                gameState.allLevelsCompleted = true;
-                bookwormGameBtn.style.display = 'block';
-                nextLevelBtn.textContent = "🏆 COMPLETE";
-                showToast("🎉 MISSION ACCOMPLISHED!");
-            }
         }
         
         function showToast(msg, type = "info") {
