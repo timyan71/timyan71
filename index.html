@@ -5,16 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Match AR! - STUDY MISSION</title>
     <style>
-        /* Pixel Font + Sweet Dessert Palette */
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        /* 像素風格字體：Press Start 2P 搭配 VT323 提升復古遊戲感 */
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            image-rendering: crisp-edges;
-            image-rendering: pixelated;
-            image-rendering: pixelated;
         }
 
         html, body {
@@ -22,56 +19,60 @@
             height: 100%;
             overflow: hidden;
             position: fixed;
-            font-family: 'Press Start 2P', 'Courier New', monospace;
-            background: #1e1a0f; /* deep dessert base */
-            color: #2d2b1f;
+            font-family: 'Press Start 2P', 'VT323', monospace;
+            background: #e2f6d4;  /* 1. 嫩葉淺綠色作為背景主色調 (最多) */
+            color: #4b8f7d;       /* 4. 深海松葉綠作為主要文字色 (最少) */
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* ----- Pixel style helper: blocky shadows, sharp borders ----- */
-        .pixel-border {
-            border-style: solid;
-            border-width: 3px 3px 5px 3px;
-            border-image: none;
-            box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
-        }
-
-        /* 暖甜點色調背景 + 主色1 (#e2f6d4 最多) 輕柔奶綠 */
+        /* 清新綠色背景層次：淺綠基底，加入柔和草綠的網格裝飾 */
         .cyber-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: repeating-linear-gradient(0deg, 
-                #fef7e0 0px, #fef7e0 4px,
-                #fcf3cf 4px, #fcf3cf 8px);
+            background: #e2f6d4;  /* 淺綠基底 */
             z-index: -2;
         }
-
-        /* 主色2 #b6e4a8 柔和草綠塊狀疊加 */
-        .energy-wave {
+        /* 輕度像素網格：使用柔和草綠 #b6e4a8 做點綴 (用量第二多) */
+        .cyber-bg::after {
+            content: "";
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-image: 
-                repeating-linear-gradient(90deg, rgba(182,228,168,0.2) 0px, rgba(182,228,168,0.2) 8px, transparent 8px, transparent 16px),
-                repeating-linear-gradient(0deg, rgba(116,201,159,0.1) 0px, rgba(116,201,159,0.1) 8px, transparent 8px, transparent 16px);
+                linear-gradient(to right, #b6e4a8 1px, transparent 1px),
+                linear-gradient(to bottom, #b6e4a8 1px, transparent 1px);
+            background-size: 24px 24px;
+            opacity: 0.35;
             pointer-events: none;
             z-index: -1;
-            animation: pixelShift 8s steps(4) infinite;
         }
 
-        /* 像素掃描線 */
+        /* 能量波動: 使用薄荷綠 #74c99f 為主 (用量第三) */
+        .energy-wave {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(116, 201, 159, 0.25) 0%, transparent 70%);
+            animation: energyPulse 4s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* 掃描線：深海松葉綠，低調像素感 */
         .scan-line {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: repeating-linear-gradient(0deg, rgba(75,143,125,0.15) 0px, rgba(75,143,125,0.15) 2px, transparent 2px, transparent 6px);
+            background: repeating-linear-gradient(0deg, rgba(75, 143, 125, 0.06) 0px, rgba(75, 143, 125, 0.06) 2px, transparent 2px, transparent 8px);
             pointer-events: none;
             z-index: 10;
         }
@@ -81,8 +82,8 @@
             height: 100vh;
             overflow-y: auto;
             overflow-x: hidden;
-            padding: 16px;
-            padding-bottom: 70px;
+            padding: 15px;
+            padding-bottom: 60px;
             position: relative;
             z-index: 1;
             display: flex;
@@ -90,46 +91,34 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* ----- 主色調應用: 1號淡綠 #e2f6d4 (背景卡片最多) 輔助 #b6e4a8 邊框, #74c99f 強調, #4b8f7d 深色字/點綴 ----- */
+        /* 像素風格邊框 */
         .status-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 15px;
-            background: #e2f6d4;   /* 主色1 淡綠色基調 */
-            border: 3px solid #b6e4a8;
+            padding: 14px 18px;
+            background: #e2f6d4;  /* 淺綠基底 */
+            border: 4px solid #74c99f; /* 薄荷綠邊框 */
             margin-bottom: 18px;
             position: relative;
             flex-shrink: 0;
-            box-shadow: 4px 4px 0 rgba(75,143,125,0.3);
+            box-shadow: inset 0 0 0 1px #4b8f7d, 4px 4px 0 #b6e4a8;
         }
         .status-bar::before {
             content: 'MISSION';
             position: absolute;
-            top: -10px;
+            top: -12px;
             left: 12px;
-            background: #fcf1cf;
-            padding: 0 6px;
-            font-size: 8px;
-            color: #4b8f7d;
-            letter-spacing: 1px;
-            border-left: 2px solid #74c99f;
-            border-right: 2px solid #74c99f;
-        }
-        .status-bar .level-info {
+            background: #74c99f;  /* 薄荷綠 */
+            padding: 0 8px;
+            color: #e2f6d4;
             font-size: 10px;
-            color: #3a5e4e;
-            text-shadow: none;
-        }
-        .timer {
-            font-size: 22px;
-            font-weight: normal;
             font-family: 'Press Start 2P', monospace;
-            color: #4b8f7d;
-            background: #fff9e8;
-            padding: 4px 8px;
-            border: 2px solid #74c99f;
             letter-spacing: 1px;
+            border: 2px solid #4b8f7d;
+        }
+        .status-bar .level-info span {
+            color: #4b8f7d;
         }
 
         .energy-container {
@@ -139,80 +128,92 @@
         .energy-label {
             display: flex;
             justify-content: space-between;
-            font-size: 9px;
+            font-size: 11px;
             margin-bottom: 6px;
             color: #4b8f7d;
-            font-weight: bold;
+            font-family: 'Press Start 2P', monospace;
+            letter-spacing: 0.5px;
         }
         .energy-bar-bg {
             width: 100%;
-            height: 20px;
-            background: #f5e9ce;
-            border: 3px solid #b6e4a8;
-            box-shadow: inset 0 0 0 1px #e2f6d4, 2px 2px 0 rgba(0,0,0,0.1);
+            height: 24px;
+            background: #e2f6d4;
+            border: 3px solid #74c99f;
+            box-shadow: inset 0 0 0 1px #4b8f7d;
+            overflow: hidden;
         }
         .energy-fill {
             width: 100%;
             height: 100%;
-            background: repeating-linear-gradient(90deg, #74c99f, #74c99f 8px, #4b8f7d 8px, #4b8f7d 16px);
-            transition: width 0.2s steps(8);
+            background: repeating-linear-gradient(90deg, #74c99f, #b6e4a8, #74c99f);
+            transition: width 0.2s ease;
         }
 
         .location-header {
             text-align: center;
-            padding: 12px;
+            padding: 14px;
             background: #e2f6d4;
-            border: 3px solid #b6e4a8;
+            border: 4px solid #74c99f;
             margin-bottom: 18px;
             flex-shrink: 0;
-            box-shadow: 3px 3px 0 #cbd8b4;
+            box-shadow: inset 0 0 0 1px #4b8f7d;
         }
         .location-name {
-            font-size: 14px;
+            font-size: 18px;
             letter-spacing: 2px;
-            color: #3f6b5a;
-            font-weight: bold;
+            color: #4b8f7d;
+            text-shadow: 2px 2px 0 #b6e4a8;
         }
         .level-badge {
-            font-size: 9px;
+            font-size: 11px;
+            color: #74c99f;
+            margin-top: 8px;
+            font-family: 'Press Start 2P', monospace;
+        }
+
+        .timer {
+            font-size: 38px;
+            font-weight: 900;
+            font-family: 'Press Start 2P', monospace;
             color: #4b8f7d;
-            margin-top: 6px;
+            text-shadow: 3px 3px 0 #b6e4a8;
+            text-align: center;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+            letter-spacing: 3px;
         }
 
         .area-card {
-            background: #e2f6d4;   /* 主色1多量使用 */
-            border: 3px solid #b6e4a8;
-            padding: 14px;
+            background: #e2f6d4;
+            border: 4px solid #74c99f;
+            padding: 16px;
             margin-bottom: 18px;
             flex-shrink: 0;
-            box-shadow: 4px 4px 0 rgba(75,143,125,0.2);
+            box-shadow: inset 0 0 0 1px #4b8f7d, 4px 4px 0 #b6e4a8;
         }
         .section-title {
-            color: #3a604f;
+            color: #4b8f7d;
             margin-bottom: 12px;
-            font-size: 10px;
+            font-size: 13px;
             letter-spacing: 1.5px;
-            background: #fff6e0;
-            display: inline-block;
-            padding: 4px 8px;
-            border-left: 4px solid #74c99f;
-            font-weight: bold;
+            font-family: 'Press Start 2P', monospace;
+            text-shadow: 1px 1px 0 #b6e4a8;
         }
         .image-container {
             width: 100%;
             aspect-ratio: 4/3;
-            background: #fcf3df;
-            border: 3px solid #b6e4a8;
+            background: #e2f6d4;
+            border: 3px solid #74c99f;
             overflow: hidden;
             margin-bottom: 12px;
-            image-rendering: crisp-edges;
-            image-rendering: pixelated;
+            image-rendering: auto;  /* 圖片保持平滑自然 */
         }
         .image-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
+            image-rendering: auto;
         }
         .placeholder {
             width: 100%;
@@ -221,57 +222,63 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: #8faa7b;
-            background: #fcf1db;
-            font-size: 9px;
+            color: #74c99f;
+            background: #e2f6d4;
+            font-family: monospace;
         }
+        .placeholder i { font-size: 38px; color: #b6e4a8; opacity: 0.8; }
 
         .similarity-meter {
             margin-top: 12px;
             padding: 12px;
             background: #e2f6d4;
-            border: 3px solid #b6e4a8;
+            border: 3px solid #74c99f;
         }
         .meter-label {
             color: #4b8f7d;
-            margin-bottom: 6px;
-            font-size: 9px;
+            margin-bottom: 8px;
+            font-size: 10px;
         }
         .meter-bar {
             width: 100%;
-            height: 14px;
-            background: #efe2c6;
+            height: 16px;
+            background: #e2f6d4;
             border: 2px solid #74c99f;
+            overflow: hidden;
+            margin: 5px 0;
         }
         .meter-fill {
             height: 100%;
-            transition: width 0.2s steps(6);
+            transition: width 0.15s ease;
         }
-        .meter-fill.high { background: #4b8f7d; }  /* 主色4深綠松葉 */
-        .meter-fill.medium { background: #74c99f; } /* 主色3薄荷綠 */
-        .meter-fill.low { background: #b6e4a8; }    /* 主色2草綠 */
+        .meter-fill.high { background: #74c99f; box-shadow: inset 0 0 4px #4b8f7d; }
+        .meter-fill.medium { background: #b6e4a8; }
+        .meter-fill.low { background: #4b8f7d; }
 
+        /* 像素風格按鈕：以薄荷綠和柔和草綠為主 */
         .btn {
             width: 100%;
-            padding: 12px;
-            font-size: 11px;
-            border: 3px solid #4b8f7d;
-            background: #e2f6d4;
-            color: #2c4d3f;
-            cursor: pointer;
+            padding: 14px;
+            font-size: 13px;
             font-family: 'Press Start 2P', monospace;
-            font-weight: normal;
+            border: 3px solid #4b8f7d;
+            background: #74c99f;
+            color: #e2f6d4;
+            cursor: pointer;
+            font-weight: bold;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            transition: 0.05s linear;
+            transition: all 0.05s linear;
             margin-top: 10px;
-            box-shadow: 3px 3px 0 #b6e4a8;
+            box-shadow: inset 0 0 0 1px #e2f6d4, 3px 3px 0 #b6e4a8;
             -webkit-appearance: none;
+            text-shadow: 1px 1px 0 #4b8f7d;
         }
         .btn:active {
+            background: #b6e4a8;
+            color: #4b8f7d;
             transform: translate(2px, 2px);
-            box-shadow: 1px 1px 0 #b6e4a8;
-            background: #f5f0cf;
+            box-shadow: inset 0 0 0 1px #e2f6d4, 1px 1px 0 #4b8f7d;
         }
         .btn:disabled {
             opacity: 0.6;
@@ -300,24 +307,29 @@
 
         .back-button {
             position: fixed;
-            top: 14px;
-            left: 14px;
+            top: 15px;
+            left: 15px;
             z-index: 100;
         }
         .back-button a {
-            color: #3f6b5a;
+            color: #e2f6d4;
             text-decoration: none;
-            border: 3px solid #b6e4a8;
-            padding: 6px 10px;
-            font-size: 9px;
-            background: #e2f6d4;
+            border: 3px solid #4b8f7d;
+            padding: 8px 12px;
+            font-size: 11px;
+            background: #74c99f;
             font-family: 'Press Start 2P', monospace;
-            box-shadow: 2px 2px 0 #74c99f;
+            box-shadow: 2px 2px 0 #b6e4a8;
+            display: inline-block;
+        }
+        .back-button a:active {
+            transform: translate(2px,2px);
+            box-shadow: none;
         }
 
         .bottom-buttons {
-            margin-top: 8px;
-            margin-bottom: 20px;
+            margin-top: 10px;
+            margin-bottom: 30px;
             flex-shrink: 0;
         }
 
@@ -326,23 +338,23 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: #e2f6d4;
+            background: #74c99f;
             border: 4px solid #4b8f7d;
-            padding: 12px 20px;
-            font-size: 10px;
+            padding: 18px 24px;
+            font-size: 13px;
             z-index: 1000;
             display: none;
             text-align: center;
             white-space: nowrap;
             font-family: 'Press Start 2P', monospace;
-            color: #2c4d3f;
-            box-shadow: 6px 6px 0 rgba(0,0,0,0.2);
+            color: #e2f6d4;
+            box-shadow: 8px 8px 0 #b6e4a8;
         }
-        .toast.show { display: block; animation: fadeIn 0.2s steps(4); }
+        .toast.show { display: block; animation: fadeIn 0.2s ease; }
 
-        @keyframes pixelShift {
-            0% { background-position: 0 0; }
-            100% { background-position: 16px 16px; }
+        @keyframes energyPulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.02); }
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
@@ -353,15 +365,17 @@
             0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)}
         }
 
-        #cameraStatus.online { color: #4b8f7d; }
-        #cameraStatus.offline { color: #8faa7b; }
+        #cameraStatus.online { color: #4b8f7d; font-weight: bold; }
+        #cameraStatus.offline { color: #74c99f; background: #e2f6d4; display: inline-block; padding: 2px 6px; }
 
-        /* 額外像素細節 */
-        .energy-fill, .meter-fill, .btn {
-            image-rendering: pixelated;
+        /* 滾動條風格 */
+        ::-webkit-scrollbar {
+            width: 12px;
+            background: #e2f6d4;
         }
-        .status-bar .timer {
-            background: #fff2da;
+        ::-webkit-scrollbar-thumb {
+            background: #74c99f;
+            border: 2px solid #4b8f7d;
         }
     </style>
 </head>
@@ -377,7 +391,7 @@
             <div class="level-info">
                 <span id="currentLocation">STUDY AREA</span>
             </div>
-            <div class="timer" id="timer">--:--</div>
+            <div class="timer" id="timer">--</div>
         </div>
 
         <div class="energy-container">
@@ -401,7 +415,7 @@
         <div class="similarity-meter" id="similarityMeter" style="display:none">
             <div class="meter-label">MATCH RATE</div>
             <div class="meter-bar"><div class="meter-fill" id="similarityFill" style="width:0%"></div></div>
-            <div id="similarityText" style="text-align:center; margin-top:6px; color:#4b8f7d; font-size:9px">0%</div>
+            <div id="similarityText" style="text-align:center; margin-top:5px; color:#4b8f7d; font-size:12px">0%</div>
         </div>
 
         <div class="area-card" id="cameraArea" style="display: none;">
@@ -415,7 +429,7 @@
                 <button class="btn" id="takePhotoBtn" onclick="takePhoto()" disabled>📸 CAPTURE</button>
                 <button class="btn" id="submitBtn" onclick="submitMatch()" disabled>⬆ SUBMIT</button>
             </div>
-            <div id="cameraStatus" style="text-align:center; margin-top:10px; font-size:8px">OFFLINE</div>
+            <div id="cameraStatus" style="text-align:center; margin-top:12px; font-size:10px; font-family:monospace;">OFFLINE</div>
         </div>
 
         <div class="bottom-buttons">
@@ -434,7 +448,7 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        // ========== 第四關卡設定 ==========
+        // ========== 第四關卡設定（完全保留原始遊戲邏輯，僅色彩主題變更）==========
         const LEVEL_IMAGES = [
             "https://i.postimg.cc/w3WzMJNS/IMG-9822.jpg",
             "https://i.postimg.cc/N20wbG3D/IMG-9824.jpg",
@@ -508,11 +522,12 @@
                 await new Promise(resolve => { video.onloadedmetadata = () => { video.play(); resolve(); }; });
                 video.classList.add('visible');
                 document.getElementById('cameraPlaceholder').style.display = 'none';
-                canvas.width = video.videoWidth || 640;
-                canvas.height = video.videoHeight || 480;
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
                 gameState.cameraActive = true;
-                document.getElementById('cameraStatus').textContent = 'ONLINE';
-                document.getElementById('cameraStatus').style.color = '#4b8f7d';
+                const camStatus = document.getElementById('cameraStatus');
+                camStatus.textContent = 'ONLINE';
+                camStatus.style.color = '#4b8f7d';
                 takePhotoBtn.disabled = false;
                 showToast("✅ CAMERA READY");
             } catch (error) {
@@ -526,15 +541,10 @@
             const levelIdx = gameState.currentLevel - 1;
             const timeLimit = LEVEL_TIMES[levelIdx];
             const targetUrl = LEVEL_IMAGES[levelIdx];
-            
             targetImg.src = targetUrl;
             targetImg.style.display = 'block';
             targetPlaceholder.style.display = 'none';
-            
-            const mins = Math.floor(timeLimit/60);
-            const secs = timeLimit%60;
-            levelInfo.innerHTML = `LEVEL ${gameState.currentLevel}/5 | TIME: ${mins}:${secs.toString().padStart(2,'0')}`;
-            
+            levelInfo.innerHTML = `LEVEL ${gameState.currentLevel}/5 | TIME: ${Math.floor(timeLimit/60)}:${(timeLimit%60).toString().padStart(2,'0')}`;
             gameState.isSubmitted = false;
             gameState.levelCompleted = false;
             gameState.currentPhoto = null;
@@ -543,9 +553,8 @@
             submitBtn.disabled = true;
             submitBtn.style.display = 'block';
             nextLevelBtn.style.display = 'none';
-            takePhotoBtn.disabled = (gameState.cameraActive === true) ? false : true;
+            takePhotoBtn.disabled = false;
             takePhotoBtn.textContent = "📸 CAPTURE";
-            
             startTimer(timeLimit);
         }
         
@@ -553,7 +562,6 @@
             if (gameState.timerInterval) clearInterval(gameState.timerInterval);
             gameState.timer = seconds;
             updateTimerDisplay();
-            
             gameState.timerInterval = setInterval(() => {
                 if (gameState.timer <= 0) {
                     clearInterval(gameState.timerInterval);
@@ -571,7 +579,7 @@
             const mins = Math.floor(gameState.timer / 60);
             const secs = gameState.timer % 60;
             timerDisplay.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-            if (gameState.timer <= 10) timerDisplay.style.color = "#cd8d5f";
+            if (gameState.timer <= 10) timerDisplay.style.color = "#74c99f";
             else timerDisplay.style.color = "#4b8f7d";
         }
         
@@ -587,14 +595,9 @@
         function takePhoto() {
             if (!gameState.cameraActive) { showToast("CAMERA OFFLINE", "error"); return; }
             if (gameState.isSubmitted) { showToast("LEVEL ALREADY COMPLETED", "warning"); return; }
-            if (!video.videoWidth) { showToast("CAMERA NOT READY", "error"); return; }
-            
             const ctx = canvas.getContext('2d');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             gameState.currentPhoto = canvas.toDataURL('image/jpeg', 0.95);
-            
             takePhotoBtn.textContent = "📸 RETRY";
             showToast("📸 PHOTO TAKEN! CALCULATING SIMILARITY...");
             calculateSimilarity();
@@ -609,7 +612,6 @@
             gameState.currentSimilarity = similarity;
             displaySimilarity(similarity);
             submitBtn.disabled = false;
-            
             if (similarity >= 90) showToast(`✅ EXCELLENT! ${similarity}% - READY TO SUBMIT`);
             else if (similarity >= 70) showToast(`👍 GOOD! ${similarity}% - READY TO SUBMIT`);
             else if (similarity >= 50) showToast(`📸 ${similarity}% - CAN SUBMIT BUT LOW REDUCTION`);
@@ -632,28 +634,21 @@
             let totalReduction = reduction + timeBonus;
             totalReduction = Math.min(MAX_REDUCTION_PER_LEVEL, totalReduction);
             totalReduction = Math.min(gameState.energy, totalReduction);
-            
             gameState.energy = Math.max(0, gameState.energy - totalReduction);
             updateEnergyBar();
-            
             let gradeText = "";
-            if (gameState.currentSimilarity >= 90) gradeText = "✨ PERFECT MATCH! ✨";
-            else if (gameState.currentSimilarity >= 70) gradeText = "🌟 GOOD MATCH! 🌟";
-            else if (gameState.currentSimilarity >= 50) gradeText = "✓ ACCEPTABLE MATCH";
-            else gradeText = "⚠️ POOR MATCH";
-            
-            if (totalReduction > 0) {
-                showToast(`${gradeText} | -${totalReduction.toFixed(1)}% NEGATIVE ENERGY`);
-            } else {
-                showToast(`${gradeText} | NO ENERGY REDUCED`, "warning");
-            }
-            
+            let messageType = "info";
+            if (gameState.currentSimilarity >= 90) { gradeText = "✨ PERFECT MATCH! ✨"; messageType = "success"; }
+            else if (gameState.currentSimilarity >= 70) { gradeText = "🌟 GOOD MATCH! 🌟"; messageType = "success"; }
+            else if (gameState.currentSimilarity >= 50) { gradeText = "✓ ACCEPTABLE MATCH"; messageType = "info"; }
+            else { gradeText = "⚠️ POOR MATCH"; messageType = "warning"; }
+            if (totalReduction > 0) showToast(`${gradeText} | -${totalReduction.toFixed(1)}% NEGATIVE ENERGY`, messageType);
+            else showToast(`${gradeText} | NO ENERGY REDUCED`, "warning");
             gameState.isSubmitted = true;
             gameState.levelCompleted = true;
             takePhotoBtn.disabled = true;
             submitBtn.disabled = true;
             if (gameState.timerInterval) clearInterval(gameState.timerInterval);
-            
             if (gameState.currentLevel === 5) {
                 if (gameState.energy <= 0) showToast("🏆 ALL LEVELS CLEARED! NEGATIVE ENERGY ELIMINATED!");
                 nextLevelBtn.textContent = "🏆 FINISH";
@@ -665,8 +660,11 @@
         }
         
         function updateEnergyBar() {
-            energyFill.style.width = gameState.energy + '%';
-            energyPercent.textContent = Math.floor(gameState.energy) + '%';
+            const val = Math.max(0, gameState.energy);
+            energyFill.style.width = val + '%';
+            energyPercent.textContent = Math.floor(val) + '%';
+            if (val <= 30) energyFill.style.background = "repeating-linear-gradient(90deg, #74c99f, #b6e4a8)";
+            if (val <= 10) energyFill.style.background = "#74c99f";
         }
         
         function nextLevel() {
@@ -679,7 +677,7 @@
                 similarityMeter.style.display = 'none';
                 submitBtn.disabled = true;
                 nextLevelBtn.style.display = 'none';
-                takePhotoBtn.disabled = gameState.cameraActive;
+                takePhotoBtn.disabled = false;
                 takePhotoBtn.textContent = "📸 CAPTURE";
                 startLevel();
             } else {
@@ -692,9 +690,11 @@
             const toast = document.getElementById('toast');
             toast.textContent = msg;
             toast.className = 'toast show';
-            if (type === "error") toast.style.background = "#f3e1b3";
-            else if (type === "warning") toast.style.background = "#ffe0a3";
-            else toast.style.background = "#e2f6d4";
+            if (type === "error") toast.style.background = "#4b8f7d";
+            else if (type === "warning") toast.style.background = "#74c99f";
+            else toast.style.background = "#b6e4a8";
+            toast.style.borderColor = "#4b8f7d";
+            toast.style.color = "#e2f6d4";
             setTimeout(() => toast.classList.remove('show'), 2000);
         }
         
