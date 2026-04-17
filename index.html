@@ -1,740 +1,444 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Match AR! - STUDY MISSION</title>
+    <title>Match AR! - 故事劇情</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        /* 像素風格字體：Press Start 2P 搭配 VT323 提升復古遊戲感 */
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+        :root {
+            --pixel-border: #4a5d23;
+            --pixel-bg: #f5f7d1;
+            --pixel-accent: #8bc34a;
+            --pixel-accent-dark: #6a9e2e;
+            --pixel-text: #2d4a22;
+            --pixel-shadow: #3a4a1a;
+        }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
-        html, body {
+        body, html {
             width: 100%;
             height: 100%;
             overflow: hidden;
-            position: fixed;
-            font-family: 'Press Start 2P', 'VT323', monospace;
-            background: #e2f6d4;
-            color: #4b8f7d;
-            -webkit-tap-highlight-color: transparent;
+            background-color: var(--pixel-bg);
+            font-family: 'VT323', monospace;
+            touch-action: manipulation;
         }
 
-        .cyber-bg {
+        /* 背景圖層 */
+        .background-layer {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #e2f6d4;
+            background: url('https://i.postimg.cc/mD8p95Yf/3ktyF11d.jpg') center center / cover no-repeat;
+            filter: brightness(1.05);
             z-index: -2;
         }
 
-        .cyber-bg::after {
-            content: "";
+        /* 像素風格的半透明遮罩，增加復古感 */
+        .pixel-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: 
-                linear-gradient(to right, #b6e4a8 1px, transparent 1px),
-                linear-gradient(to bottom, #b6e4a8 1px, transparent 1px);
-            background-size: 28px 28px;
-            opacity: 0.2;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(100, 80, 40, 0.08) 0px,
+                rgba(100, 80, 40, 0.08) 2px,
+                transparent 2px,
+                transparent 8px
+            );
             pointer-events: none;
             z-index: -1;
         }
 
-        .energy-wave {
-            position: fixed;
-            top: 0;
-            left: 0;
+        /* 角色雙人站位 */
+        .character-container {
+            position: absolute;
+            bottom: 22vh;
             width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 50% 50%, rgba(116, 201, 159, 0.2) 0%, transparent 70%);
-            animation: energyPulse 4s ease-in-out infinite;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 0 6%;
             pointer-events: none;
-            z-index: -1;
+            z-index: 5;
         }
 
-        .scan-line {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(0deg, rgba(75, 143, 125, 0.05) 0px, rgba(75, 143, 125, 0.05) 2px, transparent 2px, transparent 10px);
-            pointer-events: none;
+        .character {
+            width: 38vw;
+            max-width: 260px;
+            height: auto;
+            transition: all 0.2s steps(3);
+            filter: brightness(0.65) grayscale(0.3) drop-shadow(2px 4px 0 rgba(0,0,0,0.2));
+            transform: scale(0.9);
+            opacity: 0.7;
+            image-rendering: pixelated;
+        }
+
+        .character.active {
+            filter: brightness(1) grayscale(0) drop-shadow(4px 6px 0 rgba(0,0,0,0.25));
+            transform: scale(1.08);
+            opacity: 1;
             z-index: 10;
         }
 
-        .game-container {
-            width: 100vw;
-            height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 15px;
-            padding-bottom: 60px;
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 18px;
-            background: #e2f6d4;
-            border: 4px solid #74c99f;
-            margin-bottom: 18px;
-            position: relative;
-            flex-shrink: 0;
-            box-shadow: inset 0 0 0 1px #4b8f7d, 4px 4px 0 #b6e4a8;
-        }
-        .status-bar::before {
-            content: 'MISSION';
+        /* 對話框 - RPG像素風格 */
+        .pixel-dialogue {
             position: absolute;
-            top: -12px;
-            left: 12px;
-            background: #74c99f;
-            padding: 0 8px;
-            color: #e2f6d4;
-            font-size: 10px;
-            font-family: 'Press Start 2P', monospace;
-            letter-spacing: 1px;
-            border: 2px solid #4b8f7d;
-        }
-        .status-bar .level-info span {
-            color: #4b8f7d;
+            bottom: 28px;
+            left: 5%;
+            width: 90%;
+            min-height: 140px;
+            background: rgba(252, 251, 235, 0.98);
+            border: 5px solid var(--pixel-border);
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.2);
+            padding: 16px 18px;
+            z-index: 20;
+            border-radius: 0px;
         }
 
-        .energy-container {
-            margin-bottom: 18px;
-            flex-shrink: 0;
-        }
-        .energy-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            margin-bottom: 6px;
-            color: #4b8f7d;
-            font-family: 'Press Start 2P', monospace;
-            letter-spacing: 0.5px;
-        }
-        .energy-bar-bg {
-            width: 100%;
-            height: 24px;
-            background: #e2f6d4;
-            border: 3px solid #74c99f;
-            box-shadow: inset 0 0 0 1px #4b8f7d;
-            overflow: hidden;
-        }
-        .energy-fill {
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(90deg, #74c99f, #b6e4a8, #74c99f);
-            transition: width 0.2s ease;
-        }
-
-        .location-header {
-            text-align: center;
-            padding: 14px;
-            background: #e2f6d4;
-            border: 4px solid #74c99f;
-            margin-bottom: 18px;
-            flex-shrink: 0;
-            box-shadow: inset 0 0 0 1px #4b8f7d;
-        }
-        .location-name {
-            font-size: 18px;
-            letter-spacing: 2px;
-            color: #4b8f7d;
-            text-shadow: 2px 2px 0 #b6e4a8;
-        }
-        .level-badge {
-            font-size: 11px;
-            color: #74c99f;
-            margin-top: 8px;
-            font-family: 'Press Start 2P', monospace;
-        }
-
-        .timer {
-            font-size: 38px;
-            font-weight: 900;
-            font-family: 'Press Start 2P', monospace;
-            color: #4b8f7d;
-            text-shadow: 3px 3px 0 #b6e4a8;
-            text-align: center;
-            margin-bottom: 15px;
-            flex-shrink: 0;
-            letter-spacing: 3px;
-        }
-
-        .area-card {
-            background: #e2f6d4;
-            border: 4px solid #74c99f;
-            padding: 16px;
-            margin-bottom: 18px;
-            flex-shrink: 0;
-            box-shadow: inset 0 0 0 1px #4b8f7d, 4px 4px 0 #b6e4a8;
-        }
-        .section-title {
-            color: #4b8f7d;
-            margin-bottom: 12px;
-            font-size: 13px;
-            letter-spacing: 1.5px;
-            font-family: 'Press Start 2P', monospace;
-            text-shadow: 1px 1px 0 #b6e4a8;
-        }
-        .image-container {
-            width: 100%;
-            aspect-ratio: 4/3;
-            background: #e2f6d4;
-            border: 3px solid #74c99f;
-            overflow: hidden;
-            margin-bottom: 12px;
-            image-rendering: auto;
-        }
-        .image-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            image-rendering: auto;
-        }
-        .placeholder {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #74c99f;
-            background: #e2f6d4;
-            font-family: monospace;
-        }
-        .placeholder i { font-size: 38px; color: #b6e4a8; opacity: 0.8; }
-
-        .similarity-meter {
-            margin-top: 12px;
-            padding: 12px;
-            background: #e2f6d4;
-            border: 3px solid #74c99f;
-        }
-        .meter-label {
-            color: #4b8f7d;
-            margin-bottom: 8px;
-            font-size: 10px;
-        }
-        .meter-bar {
-            width: 100%;
-            height: 16px;
-            background: #e2f6d4;
-            border: 2px solid #74c99f;
-            overflow: hidden;
-            margin: 5px 0;
-        }
-        .meter-fill {
-            height: 100%;
-            transition: width 0.15s ease;
-        }
-        .meter-fill.high { background: #74c99f; box-shadow: inset 0 0 4px #4b8f7d; }
-        .meter-fill.medium { background: #b6e4a8; }
-        .meter-fill.low { background: #4b8f7d; }
-
-        .btn {
-            width: 100%;
-            padding: 14px;
-            font-size: 13px;
-            font-family: 'Press Start 2P', monospace;
-            border: 3px solid #4b8f7d;
-            background: #74c99f;
-            color: #e2f6d4;
-            cursor: pointer;
+        /* 名稱標籤 */
+        .name-tag {
+            font-size: 22px;
             font-weight: bold;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            transition: all 0.05s linear;
+            color: white;
+            background: var(--pixel-accent-dark);
+            padding: 4px 16px;
+            border: 2px solid var(--pixel-border);
+            position: absolute;
+            top: -22px;
+            left: 15px;
+            font-family: 'VT323', monospace;
+            letter-spacing: 1px;
+            box-shadow: 2px 2px 0 var(--pixel-shadow);
+        }
+
+        .message {
+            font-size: 26px;
+            color: var(--pixel-text);
+            line-height: 1.25;
             margin-top: 10px;
-            box-shadow: inset 0 0 0 1px #e2f6d4, 3px 3px 0 #b6e4a8;
-            -webkit-appearance: none;
-            text-shadow: 1px 1px 0 #4b8f7d;
-        }
-        .btn:active {
-            background: #b6e4a8;
-            color: #4b8f7d;
-            transform: translate(2px, 2px);
-            box-shadow: inset 0 0 0 1px #e2f6d4, 1px 1px 0 #4b8f7d;
-        }
-        .btn:disabled {
-            opacity: 0.6;
-            transform: none;
-            cursor: not-allowed;
-            filter: grayscale(0.1);
+            word-break: break-word;
+            white-space: pre-wrap;
+            font-family: 'VT323', monospace;
         }
 
-        /* 特別按鈕樣式 - 書蟲按鈕 */
-        .btn-bookworm {
-            background: #4b8f7d;
-            border-color: #e2f6d4;
-            box-shadow: inset 0 0 0 1px #b6e4a8, 3px 3px 0 #b6e4a8;
-            margin-top: 20px;
-            font-size: 14px;
-            padding: 16px;
+        /* 下一句箭頭按鈕 (右側) */
+        .next-button {
+            position: absolute;
+            right: 18px;
+            bottom: 12px;
+            background: none;
+            border: none;
+            font-size: 34px;
+            font-family: monospace;
+            color: var(--pixel-accent-dark);
+            cursor: pointer;
+            animation: bounceArrow 0.5s steps(2) infinite;
+            padding: 8px 12px;
+            transition: transform 0.05s linear;
+            z-index: 25;
         }
-        .btn-bookworm:active {
-            background: #74c99f;
-            transform: translate(2px, 2px);
+        .next-button:active {
+            transform: scale(0.9);
+            color: #3a6e1f;
         }
 
-        #video {
+        @keyframes bounceArrow {
+            0% { transform: translateX(0px); }
+            100% { transform: translateX(6px); }
+        }
+
+        /* 總結畫面 (完成劇情後顯示) */
+        #summary-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            background-color: rgba(235, 240, 200, 0.97);
             display: none;
-        }
-        #video.visible { display: block; }
-
-        .photo-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 12px;
-        }
-        .photo-actions .btn {
-            flex: 1;
-            margin-top: 0;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            backdrop-filter: blur(2px);
         }
 
-        .back-button {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 100;
-        }
-        .back-button a {
-            color: #e2f6d4;
-            text-decoration: none;
-            border: 3px solid #4b8f7d;
-            padding: 8px 12px;
-            font-size: 11px;
-            background: #74c99f;
-            font-family: 'Press Start 2P', monospace;
-            box-shadow: 2px 2px 0 #b6e4a8;
-            display: inline-block;
-        }
-        .back-button a:active {
-            transform: translate(2px,2px);
-            box-shadow: none;
-        }
-
-        .bottom-buttons {
-            margin-top: 10px;
-            margin-bottom: 30px;
-            flex-shrink: 0;
-        }
-
-        .toast {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #74c99f;
-            border: 4px solid #4b8f7d;
-            padding: 18px 24px;
-            font-size: 13px;
-            z-index: 1000;
-            display: none;
+        .mission-box {
+            border: 6px solid var(--pixel-border);
+            background: #fffef0;
+            padding: 28px 20px;
+            width: 85%;
+            max-width: 450px;
             text-align: center;
-            white-space: nowrap;
-            font-family: 'Press Start 2P', monospace;
-            color: #e2f6d4;
-            box-shadow: 8px 8px 0 #b6e4a8;
-        }
-        .toast.show { display: block; animation: fadeIn 0.2s ease; }
-
-        @keyframes energyPulse {
-            0%, 100% { opacity: 0.25; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.02); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        }
-        .shake { animation: shake 0.2s steps(4); }
-        @keyframes shake {
-            0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)}
+            box-shadow: 10px 10px 0 var(--pixel-shadow);
         }
 
-        #cameraStatus.online { color: #4b8f7d; font-weight: bold; }
-        #cameraStatus.offline { color: #74c99f; background: #e2f6d4; display: inline-block; padding: 2px 6px; }
-
-        ::-webkit-scrollbar {
-            width: 12px;
-            background: #e2f6d4;
+        .mission-title {
+            font-size: 38px;
+            color: #c74e2e;
+            margin-bottom: 18px;
+            font-family: 'VT323', monospace;
+            letter-spacing: 2px;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #74c99f;
-            border: 2px solid #4b8f7d;
+
+        .mission-text {
+            font-size: 24px;
+            color: var(--pixel-text);
+            line-height: 1.4;
+            margin-bottom: 30px;
+            font-family: 'VT323', monospace;
+        }
+
+        .btn-start {
+            font-family: 'VT323', monospace;
+            font-size: 32px;
+            background: var(--pixel-accent);
+            color: #2c3e1f;
+            border: 3px solid var(--pixel-border);
+            padding: 12px 35px;
+            cursor: pointer;
+            box-shadow: 5px 5px 0 var(--pixel-border);
+            transition: all 0.05s linear;
+            font-weight: bold;
+        }
+        .btn-start:active {
+            transform: translate(3px, 3px);
+            box-shadow: 2px 2px 0 var(--pixel-border);
+        }
+
+        /* 提示按鈕區 */
+        .click-hint {
+            position: absolute;
+            bottom: 16px;
+            right: 30px;
+            font-size: 16px;
+            color: #8b6b3d;
+            background: rgba(255,250,210,0.7);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-family: monospace;
+            pointer-events: none;
+        }
+
+        /* 手機觸控優化 */
+        @media (max-width: 600px) {
+            .character {
+                width: 42vw;
+                max-width: 200px;
+            }
+            .message {
+                font-size: 22px;
+            }
+            .name-tag {
+                font-size: 18px;
+                top: -18px;
+            }
+            .mission-text {
+                font-size: 20px;
+            }
+            .btn-start {
+                font-size: 28px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="cyber-bg"></div>
-    <div class="energy-wave"></div>
-    <div class="scan-line"></div>
 
-    <div class="back-button"><a href="index.html">← EXIT</a></div>
+    <div class="background-layer"></div>
+    <div class="pixel-overlay"></div>
 
-    <div class="game-container">
-        <div class="status-bar">
-            <div class="level-info">
-                <span id="currentLocation">STUDY AREA</span>
-            </div>
-            <div class="timer" id="timer">--</div>
-        </div>
+    <!-- 左右角色 -->
+    <div class="character-container">
+        <img id="runninghorse" class="character" src="跑馬01-bad.png" alt="跑馬" onerror="this.onerror=null; this.src='https://i.postimg.cc/mD8p95Yf/3ktyF11d.jpg';">
+        <img id="bookworm" class="character" src="書蟲01-norm.png" alt="書蟲" onerror="this.onerror=null; this.src='https://i.postimg.cc/mD8p95Yf/3ktyF11d.jpg';">
+    </div>
 
-        <div class="energy-container">
-            <div class="energy-label"><span>⚡ NEGATIVE ENERGY</span><span id="energyPercent">40%</span></div>
-            <div class="energy-bar-bg"><div class="energy-fill" id="energyFill" style="width: 40%"></div></div>
-        </div>
+    <!-- 對話框區塊 -->
+    <div class="pixel-dialogue" id="dialogueBox">
+        <div class="name-tag" id="speakerName">跑馬</div>
+        <div class="message" id="messageText">覺得跑九分鐘耐力測試好辛苦T^T</div>
+        <button class="next-button" id="nextBtn">➔</button>
+    </div>
 
-        <div class="location-header" id="locationHeader" style="display: none;">
-            <div class="location-name">📖 STUDY AREA</div>
-            <div class="level-badge" id="levelInfo">LEVEL 1/5 | TIME: 5:00</div>
-        </div>
-
-        <div class="area-card" id="challengeArea" style="display: none;">
-            <div class="section-title">🎯 TARGET PHOTO</div>
-            <div class="image-container" id="targetContainer">
-                <img id="targetImg" src="" alt="TARGET" style="width:100%; height:100%; object-fit:cover; display:none;">
-                <div class="placeholder" id="targetPlaceholder"><i>📸</i><p>LOADING CHALLENGE...</p></div>
-            </div>
-        </div>
-
-        <div class="similarity-meter" id="similarityMeter" style="display:none">
-            <div class="meter-label">MATCH RATE</div>
-            <div class="meter-bar"><div class="meter-fill" id="similarityFill" style="width:0%"></div></div>
-            <div id="similarityText" style="text-align:center; margin-top:5px; color:#4b8f7d; font-size:12px">0%</div>
-        </div>
-
-        <div class="area-card" id="cameraArea" style="display: none;">
-            <div class="section-title">📷 YOUR CAMERA</div>
-            <div class="image-container">
-                <video id="video" autoplay playsinline></video>
-                <canvas id="canvas" style="display:none"></canvas>
-                <div class="placeholder" id="cameraPlaceholder"><i>📷</i><p>CAMERA OFFLINE</p></div>
-            </div>
-            <div class="photo-actions">
-                <button class="btn" id="takePhotoBtn" onclick="takePhoto()" disabled>📸 CAPTURE</button>
-                <button class="btn" id="submitBtn" onclick="submitMatch()" disabled>⬆ SUBMIT</button>
-            </div>
-            <div id="cameraStatus" style="text-align:center; margin-top:12px; font-size:10px; font-family:monospace;">OFFLINE</div>
-        </div>
-
-        <div class="bottom-buttons">
-            <!-- 下一關按鈕 (僅在未完成全部關卡時顯示) -->
-            <button class="btn" id="nextLevelBtn" onclick="nextLevel()" style="display:none">⏭ NEXT LEVEL</button>
-            <!-- 書蟲小遊戲按鈕：完成所有關卡後顯示，取代原本的 FINISH 按鈕 -->
-            <button class="btn btn-bookworm" id="bookwormGameBtn" onclick="goToBookwormGame()" style="display:none">🐛 RUN WITH 書蟲 !</button>
-        </div>
-        
-        <div class="area-card" id="studyIntroCard">
-            <div class="section-title">📍 STUDY AREA</div>
-            <div class="image-container">
-                <img id="studyImage" src="https://i.postimg.cc/hJ3vVwzL/IMG-9843.jpg" alt="STUDY AREA">
-            </div>
-            <button class="btn" id="startMatchingBtn" onclick="startMatching()">▶ START MATCHING</button>
+    <!-- 總結畫面（Matching Game 入口） -->
+    <div id="summary-screen">
+        <div class="mission-box">
+            <h1 class="mission-title">📖 MISSION START</h1>
+            <p class="mission-text" id="summaryText">
+                跑馬覺得跑九分鐘耐力測試好辛苦<br>
+                主角書蟲決定：<strong>「哈哈幫佢跑九分鐘」</strong><br><br>
+                🏃 現在進入 Matching Game，<br>
+                幫跑馬完成挑戰！
+            </p>
+            <button class="btn-start" id="startGameBtn">▶ ENTER GAME</button>
         </div>
     </div>
 
-    <div id="toast" class="toast"></div>
-
     <script>
-        // ========== 第四關卡設定 ==========
-        const LEVEL_IMAGES = [
-            "https://i.postimg.cc/w3WzMJNS/IMG-9822.jpg",
-            "https://i.postimg.cc/N20wbG3D/IMG-9824.jpg",
-            "https://i.postimg.cc/DWqFwMQG/IMG-9827.jpg",
-            "https://i.postimg.cc/hhMDm6k1/IMG-9829.jpg",
-            "https://i.postimg.cc/9RJ645D7/IMG-9846.jpg"
+        // ----- 劇情流程（四段對話）-----
+        // 依照要求：跑馬 -> 介紹 -> 書蟲回應 -> 總結畫面(自動總結)
+        const storySteps = [
+            {
+                speaker: "跑馬",
+                text: "覺得跑九分鐘耐力測試好辛苦 T^T",
+                activeCharacter: "runninghorse",   // 左側跑馬高亮
+                showSummary: false
+            },
+            {
+                speaker: "跑馬",
+                text: "【介紹】跑馬(Running Horse)\n特徵： 體育課惡夢，跑 9 分鐘耐力賽跑到快崩潰",
+                activeCharacter: "runninghorse",
+                showSummary: false
+            },
+            {
+                speaker: "主角（書蟲）",
+                text: "哈哈幫佢跑九分鐘",
+                activeCharacter: "bookworm",       // 右側書蟲高亮
+                showSummary: false
+            }
         ];
+
+        let currentStepIndex = 0;
+        let storyCompleted = false;
+
+        // DOM 元素
+        const dialogueBox = document.getElementById('dialogueBox');
+        const speakerNameEl = document.getElementById('speakerName');
+        const messageTextEl = document.getElementById('messageText');
+        const nextBtn = document.getElementById('nextBtn');
+        const summaryScreen = document.getElementById('summary-screen');
+        const startGameBtn = document.getElementById('startGameBtn');
         
-        const LEVEL_TIMES = [300, 240, 180, 120, 60];
-        const MAX_REDUCTION_PER_LEVEL = 4;
-        
-        function getReductionBySimilarity(similarity) {
-            if (similarity >= 95) return 4.0;
-            if (similarity >= 90) return 3.5;
-            if (similarity >= 85) return 3.0;
-            if (similarity >= 80) return 2.5;
-            if (similarity >= 75) return 2.0;
-            if (similarity >= 70) return 1.5;
-            if (similarity >= 65) return 1.0;
-            if (similarity >= 60) return 0.5;
-            return 0;
-        }
-        
-        let gameState = {
-            currentLevel: 1,
-            energy: 40,
-            timer: 0,
-            timerInterval: null,
-            camera: null,
-            cameraActive: false,
-            currentPhoto: null,
-            currentSimilarity: 0,
-            isSubmitted: false,
-            levelCompleted: false,
-            gameActive: false,
-            allLevelsCompleted: false
-        };
-        
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const targetImg = document.getElementById('targetImg');
-        const targetPlaceholder = document.getElementById('targetPlaceholder');
-        const similarityMeter = document.getElementById('similarityMeter');
-        const similarityFill = document.getElementById('similarityFill');
-        const similarityText = document.getElementById('similarityText');
-        const takePhotoBtn = document.getElementById('takePhotoBtn');
-        const submitBtn = document.getElementById('submitBtn');
-        const nextLevelBtn = document.getElementById('nextLevelBtn');
-        const bookwormGameBtn = document.getElementById('bookwormGameBtn');
-        const timerDisplay = document.getElementById('timer');
-        const levelInfo = document.getElementById('levelInfo');
-        const energyFill = document.getElementById('energyFill');
-        const energyPercent = document.getElementById('energyPercent');
-        const studyIntroCard = document.getElementById('studyIntroCard');
-        const locationHeader = document.getElementById('locationHeader');
-        const challengeArea = document.getElementById('challengeArea');
-        const cameraArea = document.getElementById('cameraArea');
-        
-        // 跳轉到書蟲小遊戲
-        function goToBookwormGame() {
-            showToast("🐛 LOADING BOOKWORM GAME...");
-            setTimeout(() => {
-                window.location.href = 'lilgame.html';
-            }, 500);
-        }
-        
-        async function startMatching() {
-            studyIntroCard.style.display = 'none';
-            locationHeader.style.display = 'block';
-            challengeArea.style.display = 'block';
-            cameraArea.style.display = 'block';
-            await initCamera();
-            startLevel();
-        }
-        
-        async function initCamera() {
-            try {
-                const constraints = { video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'environment' } };
-                gameState.camera = await navigator.mediaDevices.getUserMedia(constraints);
-                video.srcObject = gameState.camera;
-                await new Promise(resolve => { video.onloadedmetadata = () => { video.play(); resolve(); }; });
-                video.classList.add('visible');
-                document.getElementById('cameraPlaceholder').style.display = 'none';
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                gameState.cameraActive = true;
-                const camStatus = document.getElementById('cameraStatus');
-                camStatus.textContent = 'ONLINE';
-                camStatus.style.color = '#4b8f7d';
-                takePhotoBtn.disabled = false;
-                showToast("✅ CAMERA READY");
-            } catch (error) {
-                showToast("❌ CAMERA ACCESS DENIED", "error");
-                document.getElementById('cameraStatus').textContent = 'OFFLINE';
-                gameState.cameraActive = false;
+        const runninghorseImg = document.getElementById('runninghorse');
+        const bookwormImg = document.getElementById('bookworm');
+
+        // 更新角色高亮 (active class)
+        function updateCharacterHighlight(activeId) {
+            // 移除所有 active 狀態
+            runninghorseImg.classList.remove('active');
+            bookwormImg.classList.remove('active');
+            
+            if (activeId === 'runninghorse') {
+                runninghorseImg.classList.add('active');
+            } else if (activeId === 'bookworm') {
+                bookwormImg.classList.add('active');
             }
         }
-        
-        function startLevel() {
-            const levelIdx = gameState.currentLevel - 1;
-            const timeLimit = LEVEL_TIMES[levelIdx];
-            const targetUrl = LEVEL_IMAGES[levelIdx];
-            targetImg.src = targetUrl;
-            targetImg.style.display = 'block';
-            targetPlaceholder.style.display = 'none';
-            levelInfo.innerHTML = `LEVEL ${gameState.currentLevel}/5 | TIME: ${Math.floor(timeLimit/60)}:${(timeLimit%60).toString().padStart(2,'0')}`;
-            gameState.isSubmitted = false;
-            gameState.levelCompleted = false;
-            gameState.currentPhoto = null;
-            gameState.currentSimilarity = 0;
-            similarityMeter.style.display = 'none';
-            submitBtn.disabled = true;
-            submitBtn.style.display = 'block';
-            nextLevelBtn.style.display = 'none';
-            takePhotoBtn.disabled = false;
-            takePhotoBtn.textContent = "📸 CAPTURE";
-            startTimer(timeLimit);
-        }
-        
-        function startTimer(seconds) {
-            if (gameState.timerInterval) clearInterval(gameState.timerInterval);
-            gameState.timer = seconds;
-            updateTimerDisplay();
-            gameState.timerInterval = setInterval(() => {
-                if (gameState.timer <= 0) {
-                    clearInterval(gameState.timerInterval);
-                    if (!gameState.isSubmitted && !gameState.levelCompleted) {
-                        handleTimeout();
-                    }
-                } else {
-                    gameState.timer--;
-                    updateTimerDisplay();
-                }
-            }, 1000);
-        }
-        
-        function updateTimerDisplay() {
-            const mins = Math.floor(gameState.timer / 60);
-            const secs = gameState.timer % 60;
-            timerDisplay.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-            if (gameState.timer <= 10) timerDisplay.style.color = "#74c99f";
-            else timerDisplay.style.color = "#4b8f7d";
-        }
-        
-        function handleTimeout() {
-            showToast("⏰ TIME'S UP! LEVEL FAILED", "error");
-            gameState.levelCompleted = true;
-            takePhotoBtn.disabled = true;
-            submitBtn.disabled = true;
-            nextLevelBtn.style.display = 'block';
-            nextLevelBtn.textContent = "🔄 RETRY LEVEL";
-        }
-        
-        function takePhoto() {
-            if (!gameState.cameraActive) { showToast("CAMERA OFFLINE", "error"); return; }
-            if (gameState.isSubmitted) { showToast("LEVEL ALREADY COMPLETED", "warning"); return; }
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            gameState.currentPhoto = canvas.toDataURL('image/jpeg', 0.95);
-            takePhotoBtn.textContent = "📸 RETRY";
-            showToast("📸 PHOTO TAKEN! CALCULATING SIMILARITY...");
-            calculateSimilarity();
-        }
-        
-        function calculateSimilarity() {
-            if (gameState.isSubmitted) return;
-            const baseSimilarity = 40 + Math.random() * 50;
-            const attemptBonus = Math.min(15, Math.floor(Math.random() * 20));
-            let similarity = Math.min(98, baseSimilarity + attemptBonus);
-            similarity = Math.floor(similarity);
-            gameState.currentSimilarity = similarity;
-            displaySimilarity(similarity);
-            submitBtn.disabled = false;
-            if (similarity >= 90) showToast(`✅ EXCELLENT! ${similarity}% - READY TO SUBMIT`);
-            else if (similarity >= 70) showToast(`👍 GOOD! ${similarity}% - READY TO SUBMIT`);
-            else if (similarity >= 50) showToast(`📸 ${similarity}% - CAN SUBMIT BUT LOW REDUCTION`);
-            else showToast(`⚠️ ${similarity}% - SUBMIT WILL REDUCE LITTLE ENERGY`);
-        }
-        
-        function displaySimilarity(percent) {
-            similarityMeter.style.display = 'block';
-            similarityFill.style.width = percent + '%';
-            similarityText.textContent = percent + '%';
-            if (percent >= 80) similarityFill.className = 'meter-fill high';
-            else if (percent >= 50) similarityFill.className = 'meter-fill medium';
-            else similarityFill.className = 'meter-fill low';
-        }
-        
-        function submitMatch() {
-            if (gameState.isSubmitted) return;
-            let reduction = getReductionBySimilarity(gameState.currentSimilarity);
-            const timeBonus = Math.min(1.5, Math.floor(gameState.timer / 120));
-            let totalReduction = reduction + timeBonus;
-            totalReduction = Math.min(MAX_REDUCTION_PER_LEVEL, totalReduction);
-            totalReduction = Math.min(gameState.energy, totalReduction);
-            gameState.energy = Math.max(0, gameState.energy - totalReduction);
-            updateEnergyBar();
-            let gradeText = "";
-            let messageType = "info";
-            if (gameState.currentSimilarity >= 90) { gradeText = "✨ PERFECT MATCH! ✨"; messageType = "success"; }
-            else if (gameState.currentSimilarity >= 70) { gradeText = "🌟 GOOD MATCH! 🌟"; messageType = "success"; }
-            else if (gameState.currentSimilarity >= 50) { gradeText = "✓ ACCEPTABLE MATCH"; messageType = "info"; }
-            else { gradeText = "⚠️ POOR MATCH"; messageType = "warning"; }
-            if (totalReduction > 0) showToast(`${gradeText} | -${totalReduction.toFixed(1)}% NEGATIVE ENERGY`, messageType);
-            else showToast(`${gradeText} | NO ENERGY REDUCED`, "warning");
-            gameState.isSubmitted = true;
-            gameState.levelCompleted = true;
-            takePhotoBtn.disabled = true;
-            submitBtn.disabled = true;
-            if (gameState.timerInterval) clearInterval(gameState.timerInterval);
-            
-            if (gameState.currentLevel === 5) {
-                // 所有關卡完成！
-                gameState.allLevelsCompleted = true;
-                if (gameState.energy <= 0) {
-                    showToast("🏆 ALL LEVELS CLEARED! NEGATIVE ENERGY ELIMINATED!");
-                } else {
-                    showToast("🎉 CONGRATULATIONS! MISSION COMPLETE!");
-                }
-                // 隱藏下一關按鈕
-                nextLevelBtn.style.display = 'none';
-                // 顯示書蟲小遊戲按鈕
-                bookwormGameBtn.style.display = 'block';
+
+        // 刷新對話框內容
+        function updateDialogue() {
+            if (currentStepIndex < storySteps.length) {
+                const step = storySteps[currentStepIndex];
+                speakerNameEl.innerText = step.speaker;
+                messageTextEl.innerText = step.text;
+                updateCharacterHighlight(step.activeCharacter);
             } else {
-                // 未完成全部關卡，顯示下一關按鈕
-                nextLevelBtn.style.display = 'block';
-                nextLevelBtn.textContent = "⏭ NEXT LEVEL";
+                // 所有對話結束 -> 顯示總結畫面 (第四步總結)
+                showSummary();
             }
         }
-        
-        function updateEnergyBar() {
-            const val = Math.max(0, gameState.energy);
-            energyFill.style.width = val + '%';
-            energyPercent.textContent = Math.floor(val) + '%';
-            if (val <= 30) energyFill.style.background = "repeating-linear-gradient(90deg, #74c99f, #b6e4a8)";
-            if (val <= 10) energyFill.style.background = "#74c99f";
+
+        // 顯示總結畫面，並且讓 Matching Game 入口出現
+        function showSummary() {
+            storyCompleted = true;
+            // 隱藏對話框
+            dialogueBox.style.display = 'none';
+            // 移除角色高亮 (畫面乾淨)
+            updateCharacterHighlight(null);
+            // 顯示總結畫面
+            summaryScreen.style.display = 'flex';
         }
-        
-        function nextLevel() {
-            // 如果所有關卡已完成，不執行任何動作（按鈕已被隱藏，但保留安全檢查）
-            if (gameState.allLevelsCompleted) {
-                return;
-            }
+
+        // 處理下一步 (點擊箭頭或點擊畫面區域)
+        function goToNext() {
+            if (storyCompleted) return;
             
-            if (gameState.currentLevel < 5) {
-                gameState.currentLevel++;
-                gameState.isSubmitted = false;
-                gameState.levelCompleted = false;
-                gameState.currentPhoto = null;
-                gameState.currentSimilarity = 0;
-                similarityMeter.style.display = 'none';
-                submitBtn.disabled = true;
-                nextLevelBtn.style.display = 'none';
-                takePhotoBtn.disabled = false;
-                takePhotoBtn.textContent = "📸 CAPTURE";
-                startLevel();
+            if (currentStepIndex < storySteps.length) {
+                // 還沒到最後一個對話
+                currentStepIndex++;
+                if (currentStepIndex < storySteps.length) {
+                    // 還有下一句對話
+                    updateDialogue();
+                } else {
+                    // 對話結束 -> 展示總結畫面 (第四步總結)
+                    showSummary();
+                }
+            } else {
+                // 理論上不會進來，但安全起見
+                showSummary();
             }
         }
+
+        // 進入 Matching Game (跳轉到原本的遊戲頁面)
+        function enterMatchingGame() {
+            // 根據需求，跳轉到主要的 Matching Game html (study mission 頁面)
+            // 這裡跳轉到目前正在運行的主遊戲頁面 (假設檔案名稱為 mission_game.html 或直接替換成目前遊戲)
+            // 因為主遊戲在同個目錄下命名為 index_mission.html 或其他，但為符合運作，指定到當前的遊戲頁面 (可改成實際名稱)
+            // 此處直接跳轉到 matching game 主畫面 (使用者目前的遊戲頁面，請確保相對路徑正確)
+            // 為了彈性，我們指向當前頁面同層的 "matching_game.html" ，但依照對話提供的遊戲主程式，我們可以讓它重新載入遊戲頁面。
+            // 由於你原本遊戲在另一個html程式碼，此處我將它連到原本遊戲的html檔案名稱: 假設為 "study_mission.html"
+            // 若需要整合在同一個專案，你之後可改成對應檔名。這裡先使用相對路徑 './' 下的遊戲主頁面，你也可以指定。
+            window.location.href = 'game.html';   // 請根據實際主遊戲檔案名稱修改，目前預設為 'game.html'
+        }
+
+        // 綁定事件: 箭頭按鈕
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            goToNext();
+        });
         
-        function showToast(msg, type = "info") {
-            const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.className = 'toast show';
-            if (type === "error") toast.style.background = "#4b8f7d";
-            else if (type === "warning") toast.style.background = "#74c99f";
-            else toast.style.background = "#b6e4a8";
-            toast.style.borderColor = "#4b8f7d";
-            toast.style.color = "#e2f6d4";
-            setTimeout(() => toast.classList.remove('show'), 2000);
+        // 為了方便觸控，點擊對話框區域也可以視為下一句 (但避免按鈕重複觸發)
+        dialogueBox.addEventListener('click', (e) => {
+            // 如果點擊的是按鈕本身就不要重複觸發
+            if (e.target === nextBtn) return;
+            goToNext();
+        });
+
+        // 開始遊戲按鈕
+        startGameBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            enterMatchingGame();
+        });
+
+        // 預先設置圖片載入失敗時的替代處理：如果圖片不存在則顯示簡單文字占位，但不影響體驗
+        // 同時確保角色默認高亮第一幕 (跑馬)
+        function initStory() {
+            currentStepIndex = 0;
+            storyCompleted = false;
+            dialogueBox.style.display = 'block';
+            summaryScreen.style.display = 'none';
+            updateDialogue();
+            
+            // 如果圖片加載失敗，至少保留佔位效果
+            runninghorseImg.onerror = function() {
+                this.style.objectFit = 'contain';
+                this.style.backgroundColor = '#cfc5a0';
+                this.alt = '跑馬';
+            };
+            bookwormImg.onerror = function() {
+                this.style.objectFit = 'contain';
+                this.style.backgroundColor = '#cfc5a0';
+                this.alt = '書蟲';
+            };
         }
         
-        window.addEventListener('beforeunload', () => {
-            if (gameState.camera) gameState.camera.getTracks().forEach(t => t.stop());
-            if (gameState.timerInterval) clearInterval(gameState.timerInterval);
-        });
+        // 啟動劇情
+        initStory();
     </script>
 </body>
 </html>
