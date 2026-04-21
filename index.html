@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Match AR! - Story 1 : Study Area</title>
+    <title>Match AR! - Story</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root {
             --pixel-border: #4a5d23;
+            
             --pixel-accent: #a8d56f;
             --pixel-text: #2d4a22;
-            --dialogue-bg: #fffef0;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            image-rendering: crisp-edges;
             image-rendering: pixelated;
             -webkit-tap-highlight-color: transparent;
         }
@@ -26,125 +25,108 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #5a6e3e;  /* 底色備援 */
+            background-color: var(--pixel-bg);
             font-family: 'VT323', monospace;
             touch-action: manipulation;
         }
 
-        /* 背景圖片強制使用 studyarea.png */
         .background {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: url('studyarea.png') no-repeat center center;
             background-size: cover;
             z-index: -1;
         }
 
-        /* 確保圖片載入失敗時仍有深色備援，不影響體驗 */
-        .background::after {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #6b7f4a;
-            z-index: -2;
-        }
-
         /* 角色容器 */
         .character-container {
             position: absolute;
-            bottom: 22vh;
+            bottom: 25vh;
             width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
             padding: 0 5%;
-            pointer-events: none;
+            pointer-events: none; 
             z-index: 5;
         }
 
         .character {
-            width: 40vw;
-            max-width: 260px;
+            width: 45vw;
+            max-width: 280px;
             height: auto;
-            transition: all 0.2s steps(3);
-            filter: brightness(0.5) grayscale(0.5);
-            transform: scale(0.85);
-            opacity: 0.7;
+            transition: all 0.2s steps(2);
+            filter: brightness(0.6) grayscale(0.4);
+            transform: scale(0.9);
+            opacity: 0.8;
         }
 
         .character.active {
             filter: brightness(1) grayscale(0);
-            transform: scale(1.08);
+            transform: scale(1.1);
             opacity: 1;
             z-index: 10;
         }
 
-        /* 像素對話框 */
+        /* 對話框 */
         .pixel-dialogue {
             position: absolute;
-            bottom: 25px;
+            bottom: 30px;
             left: 5%;
             width: 90%;
             min-height: 140px;
-            background: var(--dialogue-bg);
-            border: 5px solid var(--pixel-border);
-            box-shadow: 0 5px 0 -1px var(--pixel-border), 0 -5px 0 -1px var(--pixel-border), 5px 0 0 -1px var(--pixel-border), -5px 0 0 -1px var(--pixel-border);
-            padding: 18px 20px 20px 20px;
+            background: rgba(255, 254, 240, 0.98);
+            border: 4px solid var(--pixel-border);
+            box-shadow: 
+                0 4px 0 -1px var(--pixel-border),
+                0 -4px 0 -1px var(--pixel-border),
+                4px 0 0 -1px var(--pixel-border),
+                -4px 0 0 -1px var(--pixel-border);
+            padding: 15px;
             z-index: 20;
-            cursor: pointer;
         }
 
         .name-tag {
             font-size: 22px;
-            font-weight: bold;
             color: white;
             background: var(--pixel-accent);
-            padding: 4px 14px;
+            padding: 2px 10px;
             border: 2px solid var(--pixel-border);
             position: absolute;
-            top: -18px;
-            left: 15px;
-            letter-spacing: 1px;
+            top: -20px;
+            left: 10px;
         }
 
         .message {
             font-size: 26px;
             color: var(--pixel-text);
-            line-height: 1.2;
-            margin-top: 8px;
-            word-break: break-word;
+            line-height: 1.1;
+            margin-top: 5px;
         }
 
-        .next-arrow {
+        .next-hint {
             position: absolute;
-            right: 18px;
-            bottom: 12px;
-            font-size: 28px;
+            right: 15px;
+            bottom: 10px;
+            font-size: 18px;
             color: var(--pixel-accent);
-            animation: bounceArrow 0.5s steps(2) infinite;
-            font-weight: bold;
-            cursor: pointer;
+            animation: bounce 0.6s steps(2) infinite;
         }
 
-        @keyframes bounceArrow {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(6px); }
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
         }
 
-        /* 開始遊戲按鈕畫面 */
+
+        /* 開始遊戲按鈕畫面 (取代原本的 summary-screen) */
         #start-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(245, 247, 209, 0.98);
+            background-color: var(--pixel-bg);
             display: none;
             flex-direction: column;
             justify-content: center;
@@ -156,18 +138,16 @@
         .mission-box {
             border: 6px solid var(--pixel-border);
             background: white;
-            padding: 30px 25px;
+            padding: 25px;
             width: 85%;
-            max-width: 400px;
             text-align: center;
-            box-shadow: 8px 8px 0 var(--pixel-border);
+            box-shadow: 6px 6px 0 var(--pixel-border);
         }
 
         .mission-title {
-            font-size: 34px;
+            font-size: 36px;
             color: #d32f2f;
             margin-bottom: 15px;
-            font-weight: bold;
         }
 
         .mission-text {
@@ -183,42 +163,38 @@
             background: var(--pixel-accent);
             color: white;
             border: 3px solid var(--pixel-border);
-            padding: 12px 35px;
+            padding: 10px 35px;
             cursor: pointer;
-            box-shadow: 5px 5px 0 var(--pixel-border);
+            box-shadow: 4px 4px 0 var(--pixel-border);
             transition: 0.05s linear;
-            font-weight: bold;
-        }
-        .btn-start:active {
-            transform: translate(3px, 3px);
-            box-shadow: 2px 2px 0 var(--pixel-border);
+            margin-top: 10px;
         }
 
-        /* 隱藏對話框的狀態 */
-        .hidden-dialogue {
-            display: none;
+        .btn-start:active {
+            transform: translate(3px, 3px);
+            box-shadow: 1px 1px 0 var(--pixel-border);
         }
     </style>
 </head>
-<body>
+<body onclick="handleScreenClick()">
 
-    <!-- 背景圖片 studyarea.png (強制使用本地圖片) -->
+    <!-- 背景 studyarea.png -->
     <div class="background"></div>
 
-    <!-- 左右角色區 -->
+    <!-- 角色區：左側跑馬，右側書蟲 -->
     <div class="character-container">
         <img id="runninghorse" class="character" src="跑馬01-bad.png" alt="Running Horse">
         <img id="bookworm" class="character" src="書蟲01-norm.png" alt="Bookworm">
     </div>
 
-    <!-- 對話框 (點擊箭頭或點擊對話框區域觸發下一句) -->
+    <!-- 對話框 -->
     <div class="pixel-dialogue" id="dialogue-box">
         <div class="name-tag" id="speaker-name">跑馬</div>
         <div class="message" id="message-text">Norrrrr——(lying on the ground painfully)T^T</div>
-        <div class="next-arrow" id="next-arrow">→</div>
+        <div class="next-hint">TAP TO NEXT ➔</div>
     </div>
 
-    <!-- 故事結束後顯示「Start Matching Game」按鈕 -->
+    <!-- 故事結束後顯示 Start Matching Game 按鈕 -->
     <div id="start-screen">
         <div class="mission-box">
             <h1 class="mission-title">📖 LET'S GO!</h1>
@@ -228,149 +204,73 @@
     </div>
 
     <script>
-        // 定義故事對話流程 (完全依照需求)
-        const storySteps = [
+        // 故事對話流程 (完全依照需求)
+        const story = [
             {
-                speaker: "跑馬",
+                name: "跑馬",
                 text: "Norrrrr——(lying on the ground painfully)T^T",
-                activeCharacter: "runninghorse",   // 左側角色高亮
-                characterImg: "跑馬01-bad.png"
+                active: "runninghorse"
             },
             {
-                speaker: "書蟲",
+                name: "書蟲",
                 text: "Hi— where do the noise comes from?? I cannot see anyone!",
-                activeCharacter: "bookworm",        // 右側角色高亮
-                characterImg: "書蟲01-norm.png"
+                active: "bookworm"
             },
             {
-                speaker: "書蟲",
+                name: "書蟲",
                 text: "I think I should start searching!",
-                activeCharacter: "bookworm",
-                characterImg: "書蟲01-norm.png"
+                active: "bookworm"
             }
         ];
 
-        let currentStepIndex = 0;
-        let storyEnded = false;
+        let currentLine = 0;
+        let storyFinished = false;
 
-        // DOM 元素
-        const dialogueBox = document.getElementById('dialogue-box');
-        const speakerNameEl = document.getElementById('speaker-name');
-        const messageTextEl = document.getElementById('message-text');
-        const runninghorseImg = document.getElementById('runninghorse');
-        const bookwormImg = document.getElementById('bookworm');
-        const startScreen = document.getElementById('start-screen');
-        const startMatchingBtn = document.getElementById('start-matching-btn');
-
-        // 更新角色圖片 (確保使用正確圖片路徑)
-        function updateCharacterImages(step) {
-            // 先將兩個角色的 active class 移除
-            runninghorseImg.classList.remove('active');
-            bookwormImg.classList.remove('active');
-
-            // 根據 step 高亮對應角色
-            if (step.activeCharacter === 'runninghorse') {
-                runninghorseImg.classList.add('active');
-                if (runninghorseImg.src && !runninghorseImg.src.includes('跑馬01-bad.png')) {
-                    runninghorseImg.src = '跑馬01-bad.png';
-                }
-            } else if (step.activeCharacter === 'bookworm') {
-                bookwormImg.classList.add('active');
-                if (bookwormImg.src && !bookwormImg.src.includes('書蟲01-norm.png')) {
-                    bookwormImg.src = '書蟲01-norm.png';
-                }
-            }
-        }
-
-        // 載入角色圖片 (確保圖片存在，若無則顯示預設但無傷大雅)
-        function preloadImages() {
-            // 設定預設圖片路徑
-            runninghorseImg.src = '跑馬01-bad.png';
-            bookwormImg.src = '書蟲01-norm.png';
-            // 加上錯誤處理：如果圖片無法載入，保持原樣，不影響功能
-            runninghorseImg.onerror = () => { console.log("跑馬圖片載入失敗，請檢查路徑: 跑馬01-bad.png"); };
-            bookwormImg.onerror = () => { console.log("書蟲圖片載入失敗，請檢查路徑: 書蟲01-norm.png"); };
-        }
-
-        // 確認背景圖 studyarea.png 是否可載入 (若無則顯示提示但不影響遊戲)
-        function verifyBackgroundImage() {
-            const bgDiv = document.querySelector('.background');
-            const testImg = new Image();
-            testImg.onerror = function() {
-                console.warn("⚠️ studyarea.png 無法載入，請確認圖片是否在相同目錄下");
-                // 保持原有背景樣式，背景會顯示棕色備援，但無傷大雅
-            };
-            testImg.onload = function() {
-                console.log("✅ studyarea.png 背景載入成功");
-            };
-            testImg.src = 'studyarea.png';
-        }
-
-        // 更新對話框內容
-        function updateDialogue() {
-            if (currentStepIndex < storySteps.length) {
-                const step = storySteps[currentStepIndex];
-                speakerNameEl.textContent = step.speaker;
-                messageTextEl.textContent = step.text;
-                updateCharacterImages(step);
+        // 更新 UI (角色高亮 + 對話內容)
+        function updateUI() {
+            if (currentLine < story.length) {
+                const line = story[currentLine];
+                document.getElementById('speaker-name').innerText = line.name;
+                document.getElementById('message-text').innerText = line.text;
+                
+                // 切換角色 active 狀態
+                const runninghorse = document.getElementById('runninghorse');
+                const bookworm = document.getElementById('bookworm');
+                
+                runninghorse.classList.toggle('active', line.active === 'runninghorse');
+                bookworm.classList.toggle('active', line.active === 'bookworm');
             } else {
-                // 故事結束，隱藏對話框，顯示開始遊戲按鈕畫面
-                storyEnded = true;
-                dialogueBox.classList.add('hidden-dialogue');
-                dialogueBox.style.display = 'none';
-                startScreen.style.display = 'flex';
+                // 故事結束：隱藏對話框，顯示開始遊戲按鈕畫面
+                storyFinished = true;
+                document.getElementById('dialogue-box').style.display = 'none';
+                document.getElementById('start-screen').style.display = 'flex';
             }
         }
 
-        // 前進到下一句對話 (由點擊觸發)
-        function nextDialogue() {
-            if (storyEnded) return;
-            
-            if (currentStepIndex < storySteps.length) {
-                currentStepIndex++;
-                updateDialogue();
+        // 點擊畫面觸發下一句 (包含點擊對話框和箭頭區域)
+        function handleScreenClick() {
+            if (!storyFinished) {
+                currentLine++;
+                updateUI();
             }
         }
 
-        // 點擊對話框或箭頭觸發下一句
-        function handleNextClick(event) {
-            if (storyEnded) return;
-            // 避免點擊按鈕時冒泡影響
-            if (event.target === startMatchingBtn) return;
-            nextDialogue();
-        }
-
-        // 跳轉到 matchinggame.html (與之前的遊戲連結)
+        // 跳轉到 matchinggame.html
         function goToMatchingGame() {
             window.location.href = 'matchinggame.html';
         }
 
-        // 初始化
-        function init() {
-            preloadImages();
-            verifyBackgroundImage();   // 檢查背景圖
-            // 起始狀態：左側跑馬高亮 active
-            runninghorseImg.classList.add('active');
-            bookwormImg.classList.remove('active');
-            // 綁定事件
-            dialogueBox.addEventListener('click', handleNextClick);
-            const arrowBtn = document.getElementById('next-arrow');
-            if (arrowBtn) {
-                arrowBtn.addEventListener('click', function(e) {
+        // 綁定開始按鈕事件
+        window.onload = function() {
+            updateUI();
+            const startBtn = document.getElementById('start-matching-btn');
+            if (startBtn) {
+                startBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    nextDialogue();
+                    goToMatchingGame();
                 });
             }
-            startMatchingBtn.addEventListener('click', goToMatchingGame);
-            // 設定起始對話 (確保與 storySteps[0] 一致)
-            speakerNameEl.textContent = storySteps[0].speaker;
-            messageTextEl.textContent = storySteps[0].text;
-            // 強制背景圖再次確保覆蓋 (style 內已確保)
-            document.querySelector('.background').style.background = "url('studyarea.png') no-repeat center center";
-            document.querySelector('.background').style.backgroundSize = "cover";
-        }
-
-        init();
+        };
     </script>
 </body>
 </html>
