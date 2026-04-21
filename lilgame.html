@@ -149,7 +149,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 地點畫面 */
+        /* 地點畫面 - 無按鈕版本 */
         .location-overlay {
             position: fixed;
             top: 0;
@@ -198,7 +198,6 @@
             display: block;
             image-rendering: pixelated;
         }
-
     </style>
 </head>
 <body>
@@ -230,14 +229,13 @@
         </div>
     </div>
 
-    <!-- 地點畫面 -->
+    <!-- 地點畫面 - 無 CONTINUE 按鈕，僅顯示 Next Location 和 tn.png -->
     <div id="locationOverlay" class="location-overlay">
         <div class="location-box">
             <div class="location-title">Next Location:</div>
             <div class="location-image">
-                <img id="locationImg" src="trianglearea.png" alt="trianglearea" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'150\' viewBox=\'0 0 200 150\'%3E%3Crect width=\'200\' height=\'150\' fill=\'%238aaa6a\'/%3E%3Cpolygon points=\'100,20 180,120 20,120\' fill=\'%234a5d23\'/%3E%3C/svg%3E'">
+                <img id="locationImg" src="tn.png" alt="tn" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'150\' viewBox=\'0 0 200 150\'%3E%3Crect width=\'200\' height=\'150\' fill=\'%238aaa6a\'/%3E%3Ctext x=\'100\' y=\'80\' font-size=\'20\' text-anchor=\'middle\' fill=\'%234a5d23\'%3ETN%3C/text%3E%3C/svg%3E'">
             </div>
-            <button class="continue-btn" id="continueBtn">➡ CONTINUE</button>
         </div>
     </div>
 
@@ -396,19 +394,11 @@
         }, 2000);
     }
 
-    // 顯示地點畫面
+    // 顯示地點畫面（無按鈕版本，僅顯示 tn.png）
     function showLocationScreen() {
         const locationDiv = document.getElementById('locationOverlay');
         locationDiv.style.display = 'flex';
-        
-        const continueBtn = document.getElementById('continueBtn');
-        // 移除舊監聽避免重複
-        const newBtn = continueBtn.cloneNode(true);
-        continueBtn.parentNode.replaceChild(newBtn, continueBtn);
-        newBtn.addEventListener('click', () => {
-            // 可跳轉到 story3.html
-            window.location.href = 'story3.html';
-        });
+        // 不加入任何按鈕，也沒有跳轉
     }
 
     function winGame() {
