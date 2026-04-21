@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Match AR! - Story 1</title>
+    <title>Match AR! - Story 1 : Study Area</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -27,26 +27,24 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: var(--pixel-bg);
+            background-color: #5a6e3e;  /* 底色備援 */
             font-family: 'VT323', monospace;
             touch-action: manipulation;
         }
 
-        /* 背景圖片 studyarea.png */
+        /* 背景圖片強制使用 studyarea.png */
         .background {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('studyarea.png');
+            background: url('studyarea.png') no-repeat center center;
             background-size: cover;
-            background-position: center center;
-            background-repeat: no-repeat;
             z-index: -1;
         }
 
-        /* 備援背景（如果 studyarea.png 無法載入） */
+        /* 確保圖片載入失敗時仍有深色備援，不影響體驗 */
         .background::after {
             content: "";
             position: fixed;
@@ -54,7 +52,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #8ba86b;
+            background: #6b7f4a;
             z-index: -2;
         }
 
@@ -205,7 +203,7 @@
 </head>
 <body>
 
-    <!-- 背景圖片 studyarea.png -->
+    <!-- 背景圖片 studyarea.png (強制使用本地圖片) -->
     <div class="background"></div>
 
     <!-- 左右角色區 -->
@@ -274,7 +272,6 @@
             // 根據 step 高亮對應角色
             if (step.activeCharacter === 'runninghorse') {
                 runninghorseImg.classList.add('active');
-                // 確保圖片正確 (如果已經有 src 就不用重設)
                 if (runninghorseImg.src && !runninghorseImg.src.includes('跑馬01-bad.png')) {
                     runninghorseImg.src = '跑馬01-bad.png';
                 }
@@ -292,8 +289,22 @@
             runninghorseImg.src = '跑馬01-bad.png';
             bookwormImg.src = '書蟲01-norm.png';
             // 加上錯誤處理：如果圖片無法載入，保持原樣，不影響功能
-            runninghorseImg.onerror = () => { console.log("跑馬圖片載入失敗，請檢查路徑"); };
-            bookwormImg.onerror = () => { console.log("書蟲圖片載入失敗，請檢查路徑"); };
+            runninghorseImg.onerror = () => { console.log("跑馬圖片載入失敗，請檢查路徑: 跑馬01-bad.png"); };
+            bookwormImg.onerror = () => { console.log("書蟲圖片載入失敗，請檢查路徑: 書蟲01-norm.png"); };
+        }
+
+        // 確認背景圖 studyarea.png 是否可載入 (若無則顯示提示但不影響遊戲)
+        function verifyBackgroundImage() {
+            const bgDiv = document.querySelector('.background');
+            const testImg = new Image();
+            testImg.onerror = function() {
+                console.warn("⚠️ studyarea.png 無法載入，請確認圖片是否在相同目錄下");
+                // 保持原有背景樣式，背景會顯示棕色備援，但無傷大雅
+            };
+            testImg.onload = function() {
+                console.log("✅ studyarea.png 背景載入成功");
+            };
+            testImg.src = 'studyarea.png';
         }
 
         // 更新對話框內容
@@ -330,26 +341,15 @@
             nextDialogue();
         }
 
-        // 跳轉到 matchinggame.html
+        // 跳轉到 matchinggame.html (與之前的遊戲連結)
         function goToMatchingGame() {
             window.location.href = 'matchinggame.html';
-        }
-
-        // 確保背景 studyarea.png 載入 (加上簡單備援)
-        function verifyBackground() {
-            const bgDiv = document.querySelector('.background');
-            const testImg = new Image();
-            testImg.onerror = function() {
-                // 如果 studyarea.png 不存在，背景會使用原本的顏色 + overlay，不會影響體驗
-                console.log("studyarea.png 未找到，使用預設綠色背景");
-            };
-            testImg.src = 'studyarea.png';
         }
 
         // 初始化
         function init() {
             preloadImages();
-            verifyBackground();
+            verifyBackgroundImage();   // 檢查背景圖
             // 起始狀態：左側跑馬高亮 active
             runninghorseImg.classList.add('active');
             bookwormImg.classList.remove('active');
@@ -366,6 +366,9 @@
             // 設定起始對話 (確保與 storySteps[0] 一致)
             speakerNameEl.textContent = storySteps[0].speaker;
             messageTextEl.textContent = storySteps[0].text;
+            // 強制背景圖再次確保覆蓋 (style 內已確保)
+            document.querySelector('.background').style.background = "url('studyarea.png') no-repeat center center";
+            document.querySelector('.background').style.backgroundSize = "cover";
         }
 
         init();
