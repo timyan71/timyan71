@@ -1,1 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Match AR! - Story 2 : Keep Going</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pixel-border: #4a5d23;
+            --pixel-bg: #f5f7d1;
+            --pixel-accent: #a8d56f;
+            --pixel-text: #2d4a22;
+        }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            image-rendering: pixelated;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--pixel-bg);
+            font-family: 'VT323', monospace;
+            touch-action: manipulation;
+        }
+
+        .background {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('studyarea.png') no-repeat center center;
+            background-size: cover;
+            z-index: -1;
+        }
+
+        /* 角色容器 */
+        .character-container {
+            position: absolute;
+            bottom: 25vh;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 0 5%;
+            pointer-events: none; 
+            z-index: 5;
+        }
+
+        .character {
+            width: 45vw;
+            max-width: 280px;
+            height: auto;
+            transition: all 0.2s steps(2);
+            filter: brightness(0.6) grayscale(0.4);
+            transform: scale(0.9);
+            opacity: 0.8;
+        }
+
+        .character.active {
+            filter: brightness(1) grayscale(0);
+            transform: scale(1.1);
+            opacity: 1;
+            z-index: 10;
+        }
+
+        /* 對話框 */
+        .pixel-dialogue {
+            position: absolute;
+            bottom: 30px;
+            left: 5%;
+            width: 90%;
+            min-height: 140px;
+            background: rgba(255, 254, 240, 0.98);
+            border: 4px solid var(--pixel-border);
+            box-shadow: 
+                0 4px 0 -1px var(--pixel-border),
+                0 -4px 0 -1px var(--pixel-border),
+                4px 0 0 -1px var(--pixel-border),
+                -4px 0 0 -1px var(--pixel-border);
+            padding: 15px;
+            z-index: 20;
+            cursor: pointer;
+        }
+
+        .name-tag {
+            font-size: 22px;
+            color: white;
+            background: var(--pixel-accent);
+            padding: 2px 10px;
+            border: 2px solid var(--pixel-border);
+            position: absolute;
+            top: -20px;
+            left: 10px;
+        }
+
+        .message {
+            font-size: 26px;
+            color: var(--pixel-text);
+            line-height: 1.2;
+            margin-top: 5px;
+        }
+
+        .next-hint {
+            position: absolute;
+            right: 15px;
+            bottom: 10px;
+            font-size: 18px;
+            color: var(--pixel-accent);
+            animation: bounce 0.6s steps(2) infinite;
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+        }
+
+        /* 開始遊戲按鈕畫面 */
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--pixel-bg);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 100;
+        }
+
+        .mission-box {
+            border: 6px solid var(--pixel-border);
+            background: white;
+            padding: 25px;
+            width: 85%;
+            text-align: center;
+            box-shadow: 6px 6px 0 var(--pixel-border);
+        }
+
+        .mission-title {
+            font-size: 36px;
+            color: #d32f2f;
+            margin-bottom: 15px;
+        }
+
+        .mission-text {
+            font-size: 24px;
+            color: var(--pixel-text);
+            line-height: 1.3;
+            margin-bottom: 30px;
+        }
+
+        .btn-start {
+            font-family: 'VT323', monospace;
+            font-size: 32px;
+            background: var(--pixel-accent);
+            color: white;
+            border: 3px solid var(--pixel-border);
+            padding: 10px 35px;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 var(--pixel-border);
+            transition: 0.05s linear;
+            margin-top: 10px;
+        }
+
+        .btn-start:active {
+            transform: translate(3px, 3px);
+            box-shadow: 1px 1px 0 var(--pixel-border);
+        }
+    </style>
+</head>
+<body onclick="handleScreenClick()">
+
+    <!-- 背景 studyarea.png -->
+    <div class="background"></div>
+
+    <!-- 角色區：左側跑馬，右側書蟲 -->
+    <div class="character-container">
+        <img id="runninghorse" class="character" src="跑馬01-bad.png" alt="Running Horse">
+        <img id="bookworm" class="character" src="書蟲01-norm.png" alt="Bookworm">
+    </div>
+
+    <!-- 對話框 -->
+    <div class="pixel-dialogue" id="dialogue-box">
+        <div class="name-tag" id="speaker-name">跑馬</div>
+        <div class="message" id="message-text">(lying on the ground painfully)</div>
+        <div class="next-hint">TAP TO NEXT ➔</div>
+    </div>
+
+    <!-- 故事結束後顯示 Start 按鈕 (前往 lilgame.html) -->
+    <div id="start-screen">
+        <div class="mission-box">
+            <h1 class="mission-title">🏃‍♂️ LET'S RUN!</h1>
+            <p class="mission-text">Help Running Horse get back on track!<br>Play the mini-game to continue!</p>
+            <button class="btn-start" id="start-game-btn">▶ START</button>
+        </div>
+    </div>
+
+    <script>
+        // 故事對話流程 (依照需求: 4段對話)
+        const story = [
+            {
+                name: "跑馬",
+                text: "(lying on the ground painfully)",
+                active: "runninghorse"
+            },
+            {
+                name: "書蟲",
+                text: "Hi! I found you! …Are…Are you alive? Are you gwenchana? (괜찮아-means 'fine' in Korean)",
+                active: "bookworm"
+            },
+            {
+                name: "跑馬",
+                text: "Ding-Ding—I mean, it's Nine minutes running… My heart is exploding... I can't...",
+                active: "runninghorse"
+            },
+            {
+                name: "書蟲",
+                text: "Don't stop! I'll pace you. Follow my lead!",
+                active: "bookworm"
+            }
+        ];
+
+        let currentLine = 0;
+        let storyFinished = false;
+
+        // 更新 UI (角色高亮 + 對話內容)
+        function updateUI() {
+            if (currentLine < story.length) {
+                const line = story[currentLine];
+                document.getElementById('speaker-name').innerText = line.name;
+                document.getElementById('message-text').innerText = line.text;
+                
+                // 切換角色 active 狀態
+                const runninghorse = document.getElementById('runninghorse');
+                const bookworm = document.getElementById('bookworm');
+                
+                runninghorse.classList.toggle('active', line.active === 'runninghorse');
+                bookworm.classList.toggle('active', line.active === 'bookworm');
+            } else {
+                // 故事結束：隱藏對話框，顯示開始按鈕畫面
+                storyFinished = true;
+                document.getElementById('dialogue-box').style.display = 'none';
+                document.getElementById('start-screen').style.display = 'flex';
+            }
+        }
+
+        // 點擊畫面觸發下一句 (包含點擊對話框和箭頭區域)
+        function handleScreenClick() {
+            if (!storyFinished) {
+                currentLine++;
+                updateUI();
+            }
+        }
+
+        // 跳轉到 lilgame.html (書蟲小遊戲)
+        function goToLilGame() {
+            window.location.href = 'lilgame.html';
+        }
+
+        // 綁定開始按鈕事件
+        window.onload = function() {
+            updateUI();
+            const startBtn = document.getElementById('start-game-btn');
+            if (startBtn) {
+                startBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    goToLilGame();
+                });
+            }
+        };
+    </script>
+</body>
+</html>
