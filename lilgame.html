@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bookworm Game - Run With 書蟲!</title>
+    <title>Run with 書蟲! - Mini Game</title>
     <style>
-        /* 像素風格 */
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
-
         * {
             margin: 0;
             padding: 0;
@@ -17,111 +14,74 @@
         }
 
         body {
+            background: #1a2a1a;
             min-height: 100vh;
-            background: #e2f6d4;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Press Start 2P', 'VT323', monospace;
-            padding: 20px;
-            position: relative;
+            font-family: 'Courier New', monospace;
             overflow: hidden;
-        }
-
-        /* 像素背景網格 */
-        body::before {
-            content: "";
             position: fixed;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
-            background-image: 
-                linear-gradient(to right, #b6e4a8 1px, transparent 1px),
-                linear-gradient(to bottom, #b6e4a8 1px, transparent 1px);
-            background-size: 30px 30px;
-            opacity: 0.3;
-            pointer-events: none;
-            z-index: 0;
         }
 
+        /* 像素風格邊框裝飾 */
         .game-wrapper {
-            background: #f5f7d1;
-            border: 6px solid #4a5d23;
-            box-shadow: 8px 8px 0 #4a5d23;
+            background: #2a3a2a;
             padding: 20px;
-            max-width: 800px;
-            width: 100%;
-            position: relative;
-            z-index: 1;
-        }
-
-        h1 {
-            font-size: 20px;
-            text-align: center;
-            color: #2d4a22;
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-            word-break: keep-all;
-        }
-
-        .score-board {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            font-size: 16px;
-            color: #4b8f7d;
-            background: #e2f6d4;
-            padding: 10px;
-            border: 3px solid #74c99f;
-        }
-
-        .game-canvas-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
+            border: 8px solid #5a7a4a;
+            box-shadow: 0 0 0 4px #8aaa6a, inset 0 0 0 4px #3a5a3a;
         }
 
         canvas {
-            background-color: #c8e0b0;
-            border: 4px solid #4a5d23;
-            box-shadow: inset 0 0 0 2px #f5f7d1, 4px 4px 0 #4a5d23;
+            display: block;
+            margin: 0 auto;
+            box-shadow: 0 4px 0 #3a5a3a;
             cursor: pointer;
-            width: 100%;
-            height: auto;
+            background: #8aaa6a;
         }
 
-        .control-buttons {
+        .info-panel {
+            margin-top: 20px;
             display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 15px;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            background: #2a3a2a;
+            padding: 12px 20px;
+            border: 4px solid #5a7a4a;
         }
 
-        .btn {
-            font-family: 'Press Start 2P', monospace;
-            font-size: 14px;
-            padding: 10px 20px;
-            background: #74c99f;
-            border: 3px solid #4b8f7d;
+        .score-box {
+            background: #1a2a1a;
+            padding: 8px 20px;
+            border: 3px solid #8aaa6a;
+            color: #d4e67a;
+            font-size: 28px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 0 #3a5a3a;
+        }
+
+        .restart-btn {
+            background: #5a7a4a;
+            border: none;
+            padding: 8px 20px;
             color: #e2f6d4;
+            font-size: 20px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
             cursor: pointer;
-            box-shadow: 3px 3px 0 #4b8f7d;
+            border: 3px solid #8aaa6a;
             transition: 0.05s linear;
         }
 
-        .btn:active {
+        .restart-btn:active {
             transform: translate(2px, 2px);
-            box-shadow: 1px 1px 0 #4b8f7d;
         }
 
-        .btn:disabled {
-            opacity: 0.5;
-            transform: none;
-            cursor: not-allowed;
-        }
-
-        /* 彈窗覆蓋層 */
+        /* 彈出視窗覆蓋層 */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -137,16 +97,16 @@
         }
 
         .modal-content {
-            background: #fffef0;
+            background: #f5f7d1;
             border: 8px solid #4a5d23;
-            box-shadow: 12px 12px 0 rgba(0, 0, 0, 0.3);
-            padding: 30px 25px 35px;
-            max-width: 500px;
+            padding: 30px 25px;
             width: 85%;
+            max-width: 450px;
             text-align: center;
-            font-family: 'Press Start 2P', 'VT323', monospace;
+            box-shadow: 12px 12px 0 rgba(0, 0, 0, 0.3);
+            font-family: 'VT323', 'Courier New', monospace;
             position: relative;
-            animation: modalPop 0.3s steps(3);
+            animation: modalPop 0.3s ease-out;
         }
 
         @keyframes modalPop {
@@ -154,408 +114,480 @@
             to { transform: scale(1); opacity: 1; }
         }
 
-        /* 閃光動畫 */
-        @keyframes glowPulse {
-            0% { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px #ffd700); opacity: 0.7; }
-            50% { filter: drop-shadow(0 0 12px #ffaa00) drop-shadow(0 0 20px #ffdd88); opacity: 1; transform: scale(1.02); }
-            100% { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px #ffd700); opacity: 0.7; }
+        /* 閃光發光效果 */
+        .glow-image {
+            margin: 10px auto;
+            display: inline-block;
+            animation: sparkle 1.2s infinite ease-in-out;
+            filter: drop-shadow(0 0 8px #ffd966) drop-shadow(0 0 15px #ffaa33);
+        }
+
+        @keyframes sparkle {
+            0% { filter: drop-shadow(0 0 2px #ffd966) drop-shadow(0 0 5px #ffaa33); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 15px #ffe08c) drop-shadow(0 0 25px #ffcc55); transform: scale(1.05); }
+            100% { filter: drop-shadow(0 0 2px #ffd966) drop-shadow(0 0 5px #ffaa33); transform: scale(1); }
         }
 
         .item-image {
             width: 120px;
             height: auto;
-            margin: 0 auto 15px;
-            display: block;
-            animation: glowPulse 1.2s ease-in-out infinite;
             image-rendering: pixelated;
             image-rendering: crisp-edges;
         }
 
-        .modal-text {
-            font-size: 18px;
-            line-height: 1.5;
-            color: #2d4a22;
-            margin: 15px 0;
-            word-break: break-word;
+        .modal-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #d32f2f;
+            margin: 15px 0 10px;
+            text-shadow: 2px 2px 0 #b6e4a8;
         }
 
-        .modal-text p {
-            margin: 10px 0;
+        .modal-text {
+            font-size: 22px;
+            color: #2d4a22;
+            line-height: 1.3;
+            margin: 15px 0;
         }
 
         .next-button {
-            font-family: 'Press Start 2P', monospace;
-            font-size: 28px;
             background: #a8d56f;
             border: 4px solid #4a5d23;
             color: #2d4a22;
-            padding: 10px 30px;
+            font-size: 32px;
+            font-weight: bold;
+            padding: 8px 30px;
+            margin-top: 15px;
             cursor: pointer;
-            box-shadow: 5px 5px 0 #4a5d23;
+            font-family: 'VT323', monospace;
             transition: 0.05s linear;
             display: inline-block;
-            margin-top: 15px;
-            opacity: 0;
-            transform: scale(0.9);
-            transition: all 0.2s ease;
-        }
-
-        .next-button.show {
-            opacity: 1;
-            transform: scale(1);
+            box-shadow: 4px 4px 0 #4a5d23;
+            animation: fadeInUp 0.5s ease-out;
         }
 
         .next-button:active {
             transform: translate(3px, 3px);
-            box-shadow: 2px 2px 0 #4a5d23;
+            box-shadow: 1px 1px 0 #4a5d23;
         }
 
-        .location-info {
-            font-size: 24px;
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 第二階段地點畫面 */
+        .location-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1100;
+            flex-direction: column;
+        }
+
+        .location-box {
+            background: #f5f7d1;
+            border: 8px solid #4a5d23;
+            padding: 30px 25px;
+            width: 85%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 12px 12px 0 rgba(0, 0, 0, 0.3);
+            animation: modalPop 0.4s ease-out;
+        }
+
+        .location-title {
+            font-size: 32px;
+            font-weight: bold;
             color: #d32f2f;
-            margin-top: 20px;
+            margin-bottom: 20px;
+            font-family: 'VT323', monospace;
+        }
+
+        .location-image {
+            width: 90%;
+            max-width: 300px;
+            margin: 15px auto;
+            border: 4px solid #4a5d23;
             background: #e2f6d4;
-            padding: 12px;
-            border: 3px solid #4a5d23;
-            display: inline-block;
+            padding: 10px;
+        }
+
+        .location-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+            image-rendering: pixelated;
+        }
+
+        .continue-btn {
+            background: #a8d56f;
+            border: 4px solid #4a5d23;
+            color: #2d4a22;
+            font-size: 28px;
+            padding: 10px 30px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-weight: bold;
+            box-shadow: 4px 4px 0 #4a5d23;
+        }
+
+        .continue-btn:active {
+            transform: translate(3px, 3px);
+            box-shadow: 1px 1px 0 #4a5d23;
         }
     </style>
 </head>
 <body>
-
 <div class="game-wrapper">
-    <h1>🐛 RUN WITH BOOKWORM 🐛</h1>
-    <div class="score-board">
-        <span>SCORE: <span id="scoreValue">0</span></span>
-        <span>TARGET: 20 POINTS</span>
-    </div>
-    <div class="game-canvas-container">
-        <canvas id="gameCanvas" width="600" height="400" style="width:100%; height:auto; max-width:600px; aspect-ratio:600/400"></canvas>
-    </div>
-    <div class="control-buttons">
-        <button class="btn" id="restartBtn">🔄 RESTART</button>
-    </div>
-    <div style="text-align: center; margin-top: 15px; font-size: 12px; color: #4b8f7d;">
-        ← → MOVE (OR CLICK LEFT/RIGHT)
+    <canvas id="gameCanvas" width="500" height="400"></canvas>
+    <div class="info-panel">
+        <div class="score-box">SCORE: <span id="scoreValue">0</span></div>
+        <button class="restart-btn" id="restartBtn">RESTART</button>
     </div>
 </div>
 
-<!-- 彈窗 -->
-<div id="completionModal" class="modal-overlay">
+<!-- 第一階段彈窗：獲得道具 + 閃光 -->
+<div id="rewardModal" class="modal-overlay">
     <div class="modal-content">
-        <img id="itemImage" class="item-image" src="跑馬-sweatband道具.png" alt="Sweatband" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23a8d56f\'/%3E%3Ctext x=\'50\' y=\'55\' font-size=\'12\' text-anchor=\'middle\' fill=\'%232d4a22\'%3E🏃%3C/text%3E%3C/svg%3E'">
-        <div class="modal-text">
-            <p>✨ ‘Sweatband’ Get! ✨</p>
-            <p>A new Sweatband…What can it use for? Deco?</p>
-            <p>Please keep it until the final war with the villain…</p>
-            <p>Please move to the next location.</p>
+        <div class="glow-image">
+            <img id="sweatbandImg" class="item-image" src="跑馬-sweatband道具.png" alt="Sweatband" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23a8d56f\'/%3E%3Ctext x=\'50\' y=\'55\' font-size=\'12\' text-anchor=\'middle\' fill=\'%232d4a22\'%3E🏃%3C/text%3E%3C/svg%3E'">
         </div>
-        <button id="nextLocationBtn" class="next-button">➡</button>
-        <div id="locationDisplay" style="margin-top: 20px;"></div>
+        <div class="modal-title">‘Sweatband’ Get!</div>
+        <div class="modal-text">
+            A new Sweatband…What can it use for? Deco?<br>
+            Please keep it until the final war with the villain…<br>
+            Please move to the next location.
+        </div>
+        <div id="nextBtnContainer" style="min-height: 70px;"></div>
+    </div>
+</div>
+
+<!-- 第二階段地點畫面 -->
+<div id="locationScreen" class="location-screen">
+    <div class="location-box">
+        <div class="location-title">Next Location:</div>
+        <div class="location-image">
+            <img id="locationImg" src="trianglearea.png" alt="trianglearea" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'150\' viewBox=\'0 0 200 150\'%3E%3Crect width=\'200\' height=\'150\' fill=\'%238aaa6a\'/%3E%3Cpolygon points=\'100,20 180,120 20,120\' fill=\'%234a5d23\'/%3E%3C/svg%3E'">
+        </div>
+        <button class="continue-btn" id="continueBtn">➡ CONTINUE</button>
     </div>
 </div>
 
 <script>
-    // ==================== 小遊戲邏輯 (收集物品 + 躲避障礙) ====================
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const scoreSpan = document.getElementById('scoreValue');
-    
-    // 設定畫布實際尺寸
-    canvas.width = 600;
-    canvas.height = 400;
-    
-    let gameRunning = true;
-    let animationId = null;
-    let score = 0;
-    let gameCompleted = false;   // 是否已完成目標並顯示彈窗
-    
-    // 玩家
-    const player = {
-        x: canvas.width / 2 - 20,
-        y: canvas.height - 60,
-        width: 35,
-        height: 35,
-        speed: 7
-    };
-    
-    // 物品陣列
-    let items = [];
-    // 障礙物陣列
-    let obstacles = [];
-    
-    // 生成控制
-    let frameCounter = 0;
-    let itemSpawnRate = 45;   // 幀數間隔生成物品
-    let obstacleSpawnRate = 70;
-    
-    // 圖片 (像素風格繪製)
-    function drawPlayer() {
-        ctx.fillStyle = '#4b8f7d';
-        ctx.fillRect(player.x, player.y, player.width, player.height);
-        ctx.fillStyle = '#e2f6d4';
-        ctx.fillRect(player.x + 5, player.y + 5, 8, 8);
-        ctx.fillRect(player.x + 22, player.y + 5, 8, 8);
-        ctx.fillStyle = '#74c99f';
-        ctx.fillRect(player.x + 12, player.y + 18, 12, 8);
-    }
-    
-    function drawItem(x, y) {
-        ctx.fillStyle = '#ffcc44';
-        ctx.fillRect(x, y, 12, 12);
-        ctx.fillStyle = '#ffaa00';
-        ctx.fillRect(x + 3, y + 3, 6, 6);
-    }
-    
-    function drawObstacle(x, y) {
-        ctx.fillStyle = '#5e3023';
-        ctx.fillRect(x, y, 18, 18);
-        ctx.fillStyle = '#c08552';
-        ctx.fillRect(x + 4, y + 4, 10, 10);
-    }
-    
-    // 生成物品
-    function spawnItem() {
-        items.push({
-            x: Math.random() * (canvas.width - 20),
-            y: -20,
-            width: 14,
-            height: 14,
-            speed: 2.5
-        });
-    }
-    
-    function spawnObstacle() {
-        obstacles.push({
-            x: Math.random() * (canvas.width - 25),
-            y: -25,
-            width: 20,
-            height: 20,
-            speed: 3.2
-        });
-    }
-    
-    function updateGame() {
-        if (!gameRunning || gameCompleted) return;
+    (function() {
+        // ---------- 小遊戲邏輯 ----------
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreSpan = document.getElementById('scoreValue');
         
-        // 移動物品
-        for (let i = 0; i < items.length; i++) {
-            items[i].y += items[i].speed;
-            if (items[i].y > canvas.height) {
-                items.splice(i, 1);
-                i--;
-            }
-        }
+        // 遊戲參數
+        let score = 0;
+        let gameRunning = true;
+        let animationId = null;
         
-        // 移動障礙物
-        for (let i = 0; i < obstacles.length; i++) {
-            obstacles[i].y += obstacles[i].speed;
-            if (obstacles[i].y > canvas.height) {
-                obstacles.splice(i, 1);
-                i--;
-            }
-        }
+        // 障礙物 / 道具
+        let obstacles = [];
+        let powerups = [];
+        let particles = [];
         
-        // 碰撞檢測 - 物品
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            if (player.x < item.x + item.width &&
-                player.x + player.width > item.x &&
-                player.y < item.y + item.height &&
-                player.y + player.height > item.y) {
-                // 收集物品
-                items.splice(i, 1);
-                score++;
-                scoreSpan.innerText = score;
-                i--;
-            }
-        }
+        // 玩家設定
+        const player = {
+            x: 70,
+            y: canvas.height - 70,
+            width: 30,
+            height: 30,
+            yVelocity: 0,
+            grounded: true,
+            jumpPower: -9,
+            gravity: 0.5,
+            color: '#d4e67a'
+        };
         
-        // 碰撞檢測 - 障礙物 (碰到扣分，並且障礙物消失)
-        for (let i = 0; i < obstacles.length; i++) {
-            const obs = obstacles[i];
-            if (player.x < obs.x + obs.width &&
-                player.x + player.width > obs.x &&
-                player.y < obs.y + obs.height &&
-                player.y + player.height > obs.y) {
-                obstacles.splice(i, 1);
-                score = Math.max(0, score - 2);
-                scoreSpan.innerText = score;
-                i--;
-                // 震動效果
-                canvas.style.transform = 'translateX(2px)';
-                setTimeout(() => { canvas.style.transform = ''; }, 80);
-            }
-        }
+        // 障礙物設定
+        let frameCounter = 0;
+        let obstacleSpawnRate = 45;
+        let powerupSpawnRate = 120;
+        let gameSpeed = 4;
         
-        // 檢查勝利條件
-        if (score >= 20 && !gameCompleted) {
-            gameCompleted = true;
-            gameRunning = false;
+        // 遊戲結束標記 (避免重複觸發彈窗)
+        let gameEndTriggered = false;
+        
+        // 初始化遊戲
+        function initGame() {
+            score = 0;
+            gameRunning = true;
+            gameEndTriggered = false;
+            obstacles = [];
+            powerups = [];
+            particles = [];
+            player.y = canvas.height - 70;
+            player.yVelocity = 0;
+            player.grounded = true;
+            gameSpeed = 4;
+            obstacleSpawnRate = 45;
+            powerupSpawnRate = 120;
+            frameCounter = 0;
+            updateScoreDisplay();
+            
             if (animationId) cancelAnimationFrame(animationId);
-            showCompletionModal();
-        }
-    }
-    
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // 背景網格
-        ctx.fillStyle = '#c8e0b0';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = '#a8c68a';
-        for (let i = 0; i < canvas.width; i += 30) {
-            ctx.beginPath();
-            ctx.moveTo(i, 0);
-            ctx.lineTo(i, canvas.height);
-            ctx.stroke();
-            ctx.moveTo(0, i);
-            ctx.lineTo(canvas.width, i);
-            ctx.stroke();
+            animationId = requestAnimationFrame(gameLoop);
         }
         
-        for (let item of items) drawItem(item.x, item.y);
-        for (let obs of obstacles) drawObstacle(obs.x, obs.y);
-        drawPlayer();
-    }
-    
-    function gameLoop() {
-        if (!gameRunning || gameCompleted) return;
-        updateGame();
-        draw();
-        frameCounter++;
-        
-        // 生成物品和障礙物
-        if (frameCounter % itemSpawnRate === 0 && items.length < 12) spawnItem();
-        if (frameCounter % obstacleSpawnRate === 0 && obstacles.length < 8) spawnObstacle();
-        
-        animationId = requestAnimationFrame(gameLoop);
-    }
-    
-    // 控制
-    let leftPressed = false, rightPressed = false;
-    
-    function handleMove() {
-        if (!gameRunning || gameCompleted) return;
-        if (leftPressed && player.x > 0) player.x -= player.speed;
-        if (rightPressed && player.x + player.width < canvas.width) player.x += player.speed;
-        requestAnimationFrame(handleMove);
-    }
-    
-    // 鍵盤事件
-    window.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowLeft') { leftPressed = true; e.preventDefault(); }
-        if (e.key === 'ArrowRight') { rightPressed = true; e.preventDefault(); }
-    });
-    window.addEventListener('keyup', (e) => {
-        if (e.key === 'ArrowLeft') leftPressed = false;
-        if (e.key === 'ArrowRight') rightPressed = false;
-    });
-    
-    // 滑鼠/觸控點擊移動 (canvas 左右區域)
-    canvas.addEventListener('click', (e) => {
-        if (!gameRunning || gameCompleted) return;
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        let clickX = (e.clientX - rect.left) * scaleX;
-        if (clickX < canvas.width / 2) {
-            player.x = Math.max(0, player.x - 35);
-        } else {
-            player.x = Math.min(canvas.width - player.width, player.x + 35);
+        function updateScoreDisplay() {
+            scoreSpan.innerText = Math.floor(score);
         }
-    });
-    
-    canvas.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        if (!gameRunning || gameCompleted) return;
-        const rect = canvas.getBoundingClientRect();
-        const touch = e.touches[0];
-        const scaleX = canvas.width / rect.width;
-        let clickX = (touch.clientX - rect.left) * scaleX;
-        if (clickX < canvas.width / 2) {
-            player.x = Math.max(0, player.x - 35);
-        } else {
-            player.x = Math.min(canvas.width - player.width, player.x + 35);
-        }
-    });
-    
-    function restartGame() {
-        // 重置狀態
-        gameRunning = true;
-        gameCompleted = false;
-        score = 0;
-        scoreSpan.innerText = "0";
-        items = [];
-        obstacles = [];
-        frameCounter = 0;
-        player.x = canvas.width / 2 - 20;
         
-        if (animationId) cancelAnimationFrame(animationId);
-        animationId = requestAnimationFrame(gameLoop);
-    }
-    
-    // 彈窗與後續邏輯
-    let nextStepActive = false;
-    
-    function showCompletionModal() {
-        const modal = document.getElementById('completionModal');
-        const nextBtn = document.getElementById('nextLocationBtn');
-        const locationDiv = document.getElementById('locationDisplay');
-        
-        modal.style.display = 'flex';
-        nextBtn.classList.remove('show');
-        locationDiv.innerHTML = '';
-        nextStepActive = false;
-        
-        // 3秒後顯示箭頭按鈕
-        setTimeout(() => {
-            if (modal.style.display === 'flex') {
-                nextBtn.classList.add('show');
-                nextStepActive = true;
+        // 跳躍
+        function jump() {
+            if (!gameRunning) return;
+            if (player.grounded) {
+                player.yVelocity = player.jumpPower;
+                player.grounded = false;
             }
-        }, 3000);
-    }
-    
-    // 下一步邏輯：顯示下一地點
-    function handleNextLocation() {
-        if (!nextStepActive) return;
-        
-        const locationDiv = document.getElementById('locationDisplay');
-        const nextBtn = document.getElementById('nextLocationBtn');
-        
-        // 顯示地點訊息
-        locationDiv.innerHTML = '<div class="location-info">📍 Next Location:<br><span style="font-size:28px;">‘trianglearea.png’</span></div>';
-        nextBtn.style.display = 'none';  // 隱藏箭頭，避免重複點擊
-        
-        // 可選：3秒後自動跳轉或保留按鈕再跳？依照需求只需顯示地點，但一般會自動跳或再加按鈕
-        // 為了體驗，顯示地點後等待2秒跳轉到下一頁 (或者您可以保留一個確認)
-        setTimeout(() => {
-            // 跳轉到故事3 (story3.html)
-            window.location.href = 'story3.html';
-        }, 2000);
-    }
-    
-    // 綁定事件
-    document.getElementById('restartBtn').addEventListener('click', () => {
-        if (gameCompleted) {
-            // 如果已完成，重啟前先關閉彈窗
-            document.getElementById('completionModal').style.display = 'none';
         }
-        restartGame();
-    });
-    
-    const nextBtnElem = document.getElementById('nextLocationBtn');
-    nextBtnElem.addEventListener('click', handleNextLocation);
-    
-    // 點擊彈窗背景不關閉，必須點按鈕
-    document.getElementById('completionModal').addEventListener('click', (e) => {
-        if (e.target === document.getElementById('completionModal')) {
-            // 可選擇不關閉，維持強制流程
+        
+        // 生成障礙物
+        function spawnObstacle() {
+            obstacles.push({
+                x: canvas.width,
+                y: canvas.height - 45,
+                width: 20,
+                height: 25,
+                color: '#8b5a2b'
+            });
         }
-    });
-    
-    // 啟動遊戲
-    restartGame();
-    handleMove();
+        
+        // 生成道具 (加分)
+        function spawnPowerup() {
+            powerups.push({
+                x: canvas.width,
+                y: canvas.height - 65,
+                width: 18,
+                height: 18,
+                color: '#ffcc55'
+            });
+        }
+        
+        // 碰撞檢測 (矩形)
+        function rectCollide(r1, r2) {
+            return !(r2.x > r1.x + r1.w ||
+                r2.x + r2.w < r1.x ||
+                r2.y > r1.y + r1.h ||
+                r2.y + r2.h < r1.y);
+        }
+        
+        // 粒子效果
+        function addParticles(x, y) {
+            for (let i = 0; i < 6; i++) {
+                particles.push({
+                    x: x + Math.random() * 20,
+                    y: y + Math.random() * 20,
+                    vx: (Math.random() - 0.5) * 3,
+                    vy: (Math.random() - 0.5) * 3 - 2,
+                    life: 0.8,
+                    size: 3
+                });
+            }
+        }
+        
+        function updateGame() {
+            if (!gameRunning) return;
+            
+            // 物理更新
+            player.yVelocity += player.gravity;
+            player.y += player.yVelocity;
+            if (player.y >= canvas.height - 70) {
+                player.y = canvas.height - 70;
+                player.yVelocity = 0;
+                player.grounded = true;
+            } else {
+                player.grounded = false;
+            }
+            
+            // 移動障礙物 & 碰撞
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].x -= gameSpeed;
+                // 碰撞檢測
+                if (rectCollide(
+                    {x: player.x, y: player.y, w: player.width, h: player.height},
+                    {x: obstacles[i].x, y: obstacles[i].y, w: obstacles[i].width, h: obstacles[i].height}
+                )) {
+                    gameRunning = false;
+                    if (!gameEndTriggered) {
+                        gameEndTriggered = true;
+                        showRewardModal();  // 遊戲結束彈出獎勵視窗
+                    }
+                    return;
+                }
+            }
+            obstacles = obstacles.filter(obs => obs.x + obs.width > 0);
+            
+            // 移動道具 & 收集加分
+            for (let i = 0; i < powerups.length; i++) {
+                powerups[i].x -= gameSpeed;
+                if (rectCollide(
+                    {x: player.x, y: player.y, w: player.width, h: player.height},
+                    {x: powerups[i].x, y: powerups[i].y, w: powerups[i].width, h: powerups[i].height}
+                )) {
+                    score += 10;
+                    updateScoreDisplay();
+                    addParticles(powerups[i].x, powerups[i].y);
+                    powerups.splice(i,1);
+                    i--;
+                }
+            }
+            powerups = powerups.filter(p => p.x + p.width > 0);
+            
+            // 生成新物件
+            frameCounter++;
+            if (frameCounter % obstacleSpawnRate === 0) {
+                spawnObstacle();
+                if (gameSpeed < 9) gameSpeed += 0.02;
+                if (obstacleSpawnRate > 25) obstacleSpawnRate -= 0.2;
+            }
+            if (frameCounter % powerupSpawnRate === 0) {
+                spawnPowerup();
+            }
+            
+            // 更新粒子
+            for (let i=0; i<particles.length; i++) {
+                particles[i].x += particles[i].vx;
+                particles[i].y += particles[i].vy;
+                particles[i].life -= 0.03;
+                if (particles[i].life <= 0) {
+                    particles.splice(i,1);
+                    i--;
+                }
+            }
+        }
+        
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // 草地
+            ctx.fillStyle = '#8aaa6a';
+            ctx.fillRect(0, canvas.height-50, canvas.width, 50);
+            ctx.fillStyle = '#6a8a4a';
+            for(let i=0;i<10;i++) ctx.fillRect(i*50, canvas.height-52, 30, 4);
+            
+            // 障礙物
+            for (let obs of obstacles) {
+                ctx.fillStyle = obs.color;
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+                ctx.fillStyle = '#5a3a1a';
+                ctx.fillRect(obs.x+3, obs.y-5, obs.width-6, 8);
+            }
+            // 道具
+            for (let p of powerups) {
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, p.width, p.height);
+                ctx.fillStyle = '#ffaa33';
+                ctx.fillRect(p.x+4, p.y+4, p.width-8, p.height-8);
+            }
+            // 玩家 (像素跑者)
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.fillStyle = '#b8d46a';
+            ctx.fillRect(player.x+5, player.y-8, 20, 10);
+            ctx.fillStyle = '#2d4a22';
+            ctx.fillRect(player.x+8, player.y-4, 5, 5);
+            ctx.fillRect(player.x+18, player.y-4, 5, 5);
+            
+            // 粒子
+            for (let p of particles) {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = '#ffdd88';
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+                ctx.globalAlpha = 1;
+            }
+            
+            if (!gameRunning) {
+                ctx.font = "bold 24 monospace";
+                ctx.fillStyle = "#2d4a22";
+                ctx.shadowBlur = 0;
+                ctx.fillText("GAME OVER", canvas.width/2-80, canvas.height/2);
+            }
+        }
+        
+        function gameLoop() {
+            updateGame();
+            draw();
+            if (gameRunning || !gameEndTriggered) {
+                animationId = requestAnimationFrame(gameLoop);
+            } else {
+                cancelAnimationFrame(animationId);
+            }
+        }
+        
+        // ---------- 彈窗與後續流程 ----------
+        function showRewardModal() {
+            const modal = document.getElementById('rewardModal');
+            modal.style.display = 'flex';
+            // 2秒後慢慢彈出 -> 按鈕
+            setTimeout(() => {
+                const container = document.getElementById('nextBtnContainer');
+                const nextBtn = document.createElement('button');
+                nextBtn.innerText = '➡';
+                nextBtn.className = 'next-button';
+                nextBtn.onclick = () => {
+                    // 關閉第一層 modal
+                    modal.style.display = 'none';
+                    // 顯示下一地點畫面
+                    showLocationScreen();
+                };
+                container.innerHTML = '';
+                container.appendChild(nextBtn);
+            }, 2000);
+        }
+        
+        function showLocationScreen() {
+            const locationDiv = document.getElementById('locationScreen');
+            locationDiv.style.display = 'flex';
+            // 綁定 CONTINUE 按鈕 (可跳轉下一頁或繼續遊戲流程)
+            const continueBtn = document.getElementById('continueBtn');
+            // 移除舊監聽避免重複
+            const newBtn = continueBtn.cloneNode(true);
+            continueBtn.parentNode.replaceChild(newBtn, continueBtn);
+            newBtn.addEventListener('click', () => {
+                // 後續可跳轉到 story3.html 或其他頁面，目前先保留完成提示
+                alert('✨ Moving to next story... ✨');
+                // 可依據需求改為 window.location.href = 'story3.html';
+                // 暫時不自動跳轉，讓玩家點擊後可以手動銜接
+                // 如需跳轉取消註解下行:
+                // window.location.href = 'story3.html';
+            });
+        }
+        
+        // 事件監聽
+        canvas.addEventListener('click', (e) => {
+            e.stopPropagation();
+            jump();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                e.preventDefault();
+                jump();
+            }
+        });
+        document.getElementById('restartBtn').addEventListener('click', () => {
+            if (animationId) cancelAnimationFrame(animationId);
+            initGame();
+        });
+        
+        // 圖片容錯: 若道具圖無法載入，用emoji替代但無傷大雅
+        const img = document.getElementById('sweatbandImg');
+        if (img) img.onerror = () => { img.src = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23ffcc88\'/%3E%3Ctext x=\'50\' y=\'55\' font-size=\'18\' text-anchor=\'middle\' fill=\'%238b5a2b\'%3E🏃%3C/text%3E%3C/svg%3E'; };
+        
+        // 啟動遊戲
+        initGame();
+    })();
 </script>
 </body>
 </html>
