@@ -409,7 +409,7 @@
 
         <div class="location-header" id="locationHeader" style="display: none;">
             <div class="location-name">📖 STUDY AREA</div>
-            <div class="level-badge" id="levelInfo">LEVEL 1/5 | TIME: 5:00</div>
+            <div class="level-badge" id="levelInfo">LEVEL 1/2 | TIME: 5:00</div>
         </div>
 
         <div class="area-card" id="challengeArea" style="display: none;">
@@ -459,16 +459,13 @@
     <div id="toast" class="toast"></div>
 
     <script>
-        // ========== 第四關卡設定 ==========
+        // ========== 改為2關卡設定 ==========
         const LEVEL_IMAGES = [
             "https://i.postimg.cc/w3WzMJNS/IMG-9822.jpg",
-            "https://i.postimg.cc/N20wbG3D/IMG-9824.jpg",
-            "https://i.postimg.cc/DWqFwMQG/IMG-9827.jpg",
-            "https://i.postimg.cc/hhMDm6k1/IMG-9829.jpg",
-            "https://i.postimg.cc/9RJ645D7/IMG-9846.jpg"
+            "https://i.postimg.cc/N20wbG3D/IMG-9824.jpg"
         ];
         
-        const LEVEL_TIMES = [300, 240, 180, 120, 60];
+        const LEVEL_TIMES = [300, 240];  // 第一關5分鐘，第二關4分鐘
         const MAX_REDUCTION_PER_LEVEL = 4;
         
         function getReductionBySimilarity(similarity) {
@@ -565,7 +562,7 @@
             targetImg.src = targetUrl;
             targetImg.style.display = 'block';
             targetPlaceholder.style.display = 'none';
-            levelInfo.innerHTML = `LEVEL ${gameState.currentLevel}/5 | TIME: ${Math.floor(timeLimit/60)}:${(timeLimit%60).toString().padStart(2,'0')}`;
+            levelInfo.innerHTML = `LEVEL ${gameState.currentLevel}/2 | TIME: ${Math.floor(timeLimit/60)}:${(timeLimit%60).toString().padStart(2,'0')}`;
             gameState.isSubmitted = false;
             gameState.levelCompleted = false;
             gameState.currentPhoto = null;
@@ -671,8 +668,8 @@
             submitBtn.disabled = true;
             if (gameState.timerInterval) clearInterval(gameState.timerInterval);
             
-            if (gameState.currentLevel === 5) {
-                // 所有關卡完成！
+            if (gameState.currentLevel === 2) {
+                // 所有關卡完成！(2關完成)
                 gameState.allLevelsCompleted = true;
                 if (gameState.energy <= 0) {
                     showToast("🏆 ALL LEVELS CLEARED! NEGATIVE ENERGY ELIMINATED!");
@@ -704,7 +701,7 @@
                 return;
             }
             
-            if (gameState.currentLevel < 5) {
+            if (gameState.currentLevel < 2) {
                 gameState.currentLevel++;
                 gameState.isSubmitted = false;
                 gameState.levelCompleted = false;
