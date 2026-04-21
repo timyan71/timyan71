@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Match AR! - 故事劇情</title>
+    <title>Match AR! - 故事對話</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root {
             --pixel-border: #4a5d23;
             --pixel-bg: #f5f7d1;
             --pixel-accent: #8bc34a;
-            --pixel-accent-dark: #6a9e2e;
             --pixel-text: #2d4a22;
-            --pixel-shadow: #3a4a1a;
+            --dialogue-bg: #fffef0;
         }
 
         * {
@@ -22,7 +21,6 @@
             image-rendering: pixelated;
             image-rendering: crisp-edges;
             -webkit-tap-highlight-color: transparent;
-            user-select: none;
         }
 
         body, html {
@@ -34,411 +32,401 @@
             touch-action: manipulation;
         }
 
-        /* 背景圖層 */
-        .background-layer {
+        /* 背景：study area.png */
+        .background {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('https://i.postimg.cc/mD8p95Yf/3ktyF11d.jpg') center center / cover no-repeat;
-            filter: brightness(1.05);
+            background: url('study area.png');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
             z-index: -2;
         }
-
-        /* 像素風格的半透明遮罩，增加復古感 */
-        .pixel-overlay {
+        
+        /* 備援背景圖（如果本地圖片找不到） */
+        .background::after {
+            content: "";
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(100, 80, 40, 0.08) 0px,
-                rgba(100, 80, 40, 0.08) 2px,
-                transparent 2px,
-                transparent 8px
-            );
-            pointer-events: none;
+            background: url('https://i.postimg.cc/mD8p95Yf/3ktyF11d.jpg');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            opacity: 0;
             z-index: -1;
+            pointer-events: none;
         }
 
-        /* 角色雙人站位 */
+        /* 角色容器 */
         .character-container {
             position: absolute;
-            bottom: 22vh;
+            bottom: 25vh;
             width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            padding: 0 6%;
+            padding: 0 5%;
             pointer-events: none;
             z-index: 5;
         }
 
         .character {
-            width: 38vw;
-            max-width: 260px;
+            width: 45vw;
+            max-width: 280px;
             height: auto;
             transition: all 0.2s steps(3);
-            filter: brightness(0.65) grayscale(0.3) drop-shadow(2px 4px 0 rgba(0,0,0,0.2));
-            transform: scale(0.9);
+            filter: brightness(0.55) grayscale(0.5);
+            transform: scale(0.85);
             opacity: 0.7;
-            image-rendering: pixelated;
         }
 
         .character.active {
-            filter: brightness(1) grayscale(0) drop-shadow(4px 6px 0 rgba(0,0,0,0.25));
-            transform: scale(1.08);
+            filter: brightness(1) grayscale(0);
+            transform: scale(1.05);
             opacity: 1;
             z-index: 10;
         }
 
-        /* 對話框 - RPG像素風格 */
+        /* 對話框 - RPG風格 */
         .pixel-dialogue {
             position: absolute;
-            bottom: 28px;
+            bottom: 20px;
             left: 5%;
             width: 90%;
             min-height: 140px;
-            background: rgba(252, 251, 235, 0.98);
+            background: var(--dialogue-bg);
             border: 5px solid var(--pixel-border);
-            box-shadow: 6px 6px 0 rgba(0,0,0,0.2);
-            padding: 16px 18px;
+            box-shadow: 0 6px 0 -2px var(--pixel-border), 0 -6px 0 -2px var(--pixel-border), 6px 0 0 -2px var(--pixel-border), -6px 0 0 -2px var(--pixel-border);
+            padding: 15px 20px;
             z-index: 20;
-            border-radius: 0px;
+            cursor: pointer;
         }
 
-        /* 名稱標籤 */
         .name-tag {
             font-size: 22px;
-            font-weight: bold;
             color: white;
-            background: var(--pixel-accent-dark);
+            background: var(--pixel-accent);
+            display: inline-block;
             padding: 4px 16px;
             border: 2px solid var(--pixel-border);
             position: absolute;
-            top: -22px;
-            left: 15px;
-            font-family: 'VT323', monospace;
+            top: -20px;
+            left: 20px;
+            font-weight: bold;
             letter-spacing: 1px;
-            box-shadow: 2px 2px 0 var(--pixel-shadow);
         }
 
         .message {
             font-size: 26px;
             color: var(--pixel-text);
             line-height: 1.25;
-            margin-top: 10px;
+            margin-top: 12px;
+            margin-bottom: 20px;
             word-break: break-word;
-            white-space: pre-wrap;
-            font-family: 'VT323', monospace;
+            white-space: pre-line;
         }
 
-        /* 下一句箭頭按鈕 (右側) */
-        .next-button {
+        /* 右側箭頭按鈕 */
+        .next-arrow {
             position: absolute;
             right: 18px;
             bottom: 12px;
+            font-size: 32px;
+            color: var(--pixel-accent);
             background: none;
             border: none;
-            font-size: 34px;
-            font-family: monospace;
-            color: var(--pixel-accent-dark);
             cursor: pointer;
-            animation: bounceArrow 0.5s steps(2) infinite;
-            padding: 8px 12px;
+            font-family: monospace;
+            font-weight: bold;
+            animation: bounce 0.5s steps(2) infinite;
             transition: transform 0.05s linear;
-            z-index: 25;
+            padding: 5px 10px;
         }
-        .next-button:active {
+        .next-arrow:active {
             transform: scale(0.9);
-            color: #3a6e1f;
         }
 
-        @keyframes bounceArrow {
-            0% { transform: translateX(0px); }
+        @keyframes bounce {
+            0% { transform: translateX(0); }
             100% { transform: translateX(6px); }
         }
 
-        /* 總結畫面 (完成劇情後顯示) */
+        /* 總結畫面 */
         #summary-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(235, 240, 200, 0.97);
+            background-color: rgba(0, 0, 0, 0.85);
             display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 200;
+            padding: 20px;
+            z-index: 100;
             backdrop-filter: blur(2px);
         }
 
         .mission-box {
             border: 6px solid var(--pixel-border);
-            background: #fffef0;
-            padding: 28px 20px;
+            background: var(--pixel-bg);
+            padding: 30px 25px;
             width: 85%;
-            max-width: 450px;
+            max-width: 500px;
             text-align: center;
-            box-shadow: 10px 10px 0 var(--pixel-shadow);
+            box-shadow: 8px 8px 0 var(--pixel-border);
         }
 
         .mission-title {
-            font-size: 38px;
-            color: #c74e2e;
-            margin-bottom: 18px;
-            font-family: 'VT323', monospace;
-            letter-spacing: 2px;
+            font-size: 36px;
+            color: #d32f2f;
+            margin-bottom: 20px;
+            font-weight: bold;
         }
-
         .mission-text {
             font-size: 24px;
             color: var(--pixel-text);
             line-height: 1.4;
             margin-bottom: 30px;
-            font-family: 'VT323', monospace;
         }
-
+        
         .btn-start {
             font-family: 'VT323', monospace;
             font-size: 32px;
             background: var(--pixel-accent);
-            color: #2c3e1f;
+            color: white;
             border: 3px solid var(--pixel-border);
-            padding: 12px 35px;
+            padding: 10px 40px;
             cursor: pointer;
             box-shadow: 5px 5px 0 var(--pixel-border);
             transition: all 0.05s linear;
-            font-weight: bold;
         }
         .btn-start:active {
             transform: translate(3px, 3px);
             box-shadow: 2px 2px 0 var(--pixel-border);
         }
 
-        /* 提示按鈕區 */
-        .click-hint {
-            position: absolute;
-            bottom: 16px;
-            right: 30px;
-            font-size: 16px;
-            color: #8b6b3d;
-            background: rgba(255,250,210,0.7);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-family: monospace;
-            pointer-events: none;
-        }
-
-        /* 手機觸控優化 */
+        /* 手機觸控最佳化 */
         @media (max-width: 600px) {
-            .character {
-                width: 42vw;
-                max-width: 200px;
-            }
-            .message {
-                font-size: 22px;
-            }
-            .name-tag {
-                font-size: 18px;
-                top: -18px;
-            }
-            .mission-text {
-                font-size: 20px;
-            }
-            .btn-start {
-                font-size: 28px;
-            }
+            .message { font-size: 20px; }
+            .name-tag { font-size: 18px; top: -18px; }
+            .character { max-width: 200px; }
+            .mission-text { font-size: 18px; }
+            .mission-title { font-size: 28px; }
+            .btn-start { font-size: 26px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="background-layer"></div>
-    <div class="pixel-overlay"></div>
+    <div class="background"></div>
 
-    <!-- 左右角色 -->
     <div class="character-container">
-        <img id="runninghorse" class="character" src="跑馬01-bad.png" alt="跑馬" onerror="this.onerror=null; this.src='https://i.postimg.cc/mD8p95Yf/3ktyF11d.jpg';">
-        <img id="bookworm" class="character" src="書蟲01-norm.png" alt="書蟲" onerror="this.onerror=null; this.src='https://i.postimg.cc/mD8p95Yf/3ktyF11d.jpg';">
+        <!-- 左側：跑馬 / 右側：書蟲 -->
+        <img id="runningHorse" class="character" src="跑馬01-bad.png" alt="跑馬">
+        <img id="bookworm" class="character" src="書蟲01-norm.png" alt="書蟲">
     </div>
 
-    <!-- 對話框區塊 -->
-    <div class="pixel-dialogue" id="dialogueBox">
-        <div class="name-tag" id="speakerName">跑馬</div>
-        <div class="message" id="messageText">覺得跑九分鐘耐力測試好辛苦T^T</div>
-        <button class="next-button" id="nextBtn">➔</button>
+    <div class="pixel-dialogue" id="dialogue-box">
+        <div class="name-tag" id="speaker-name">跑馬</div>
+        <div class="message" id="message-text">...</div>
+        <button class="next-arrow" id="nextBtn">➔</button>
     </div>
 
-    <!-- 總結畫面（Matching Game 入口） -->
     <div id="summary-screen">
         <div class="mission-box">
-            <h1 class="mission-title">📖 MISSION START</h1>
-            <p class="mission-text" id="summaryText">
-                跑馬覺得跑九分鐘耐力測試好辛苦<br>
-                主角書蟲決定：<strong>「哈哈幫佢跑九分鐘」</strong><br><br>
-                🏃 現在進入 Matching Game，<br>
-                幫跑馬完成挑戰！
+            <h1 class="mission-title">📖 任務總結</h1>
+            <p class="mission-text" id="summary-text">
+                跑馬覺得跑九分鐘耐力測試好辛苦 T^T<br>
+                主角書蟲要幫佢跑九分鐘！
             </p>
-            <button class="btn-start" id="startGameBtn">▶ ENTER GAME</button>
+            <button class="btn-start" id="startGameBtn">▶ 開始 MATCHING GAME</button>
         </div>
     </div>
 
     <script>
-        // ----- 劇情流程（四段對話）-----
-        // 依照要求：跑馬 -> 介紹 -> 書蟲回應 -> 總結畫面(自動總結)
+        // ========================
+        // 故事流程（5個步驟，包含4段對話+總結自動觸發）
+        // step0: 跑馬抱怨
+        // step1: 跑馬介紹（特徵）
+        // step2: 書蟲回應
+        // step3: 自動顯示總結畫面（無需對話框）
+        // ========================
         const storySteps = [
             {
                 speaker: "跑馬",
                 text: "覺得跑九分鐘耐力測試好辛苦 T^T",
-                activeCharacter: "runninghorse",   // 左側跑馬高亮
-                showSummary: false
+                activeCharacter: "horse",      // 亮起左側跑馬
+                showSummaryAfter: false
             },
             {
                 speaker: "跑馬",
-                text: "【介紹】跑馬(Running Horse)\n特徵： 體育課惡夢，跑 9 分鐘耐力賽跑到快崩潰",
-                activeCharacter: "runninghorse",
-                showSummary: false
+                text: "【介紹】跑馬 (Running Horse)\n特徵： 體育課惡夢，跑 9 分鐘耐力賽跑到快崩潰",
+                activeCharacter: "horse",
+                showSummaryAfter: false
             },
             {
-                speaker: "主角（書蟲）",
-                text: "哈哈幫佢跑九分鐘",
-                activeCharacter: "bookworm",       // 右側書蟲高亮
-                showSummary: false
+                speaker: "主角 書蟲",
+                text: "哈哈 幫佢跑九分鐘！",
+                activeCharacter: "bookworm",
+                showSummaryAfter: false
             }
         ];
 
-        let currentStepIndex = 0;
-        let storyCompleted = false;
+        let currentStep = 0;
+        let isSummaryVisible = false;
 
         // DOM 元素
-        const dialogueBox = document.getElementById('dialogueBox');
-        const speakerNameEl = document.getElementById('speakerName');
-        const messageTextEl = document.getElementById('messageText');
+        const dialogueBox = document.getElementById('dialogue-box');
+        const speakerNameEl = document.getElementById('speaker-name');
+        const messageTextEl = document.getElementById('message-text');
         const nextBtn = document.getElementById('nextBtn');
         const summaryScreen = document.getElementById('summary-screen');
-        const startGameBtn = document.getElementById('startGameBtn');
-        
-        const runninghorseImg = document.getElementById('runninghorse');
+        const horseImg = document.getElementById('runningHorse');
         const bookwormImg = document.getElementById('bookworm');
+        const startGameBtn = document.getElementById('startGameBtn');
 
-        // 更新角色高亮 (active class)
-        function updateCharacterHighlight(activeId) {
-            // 移除所有 active 狀態
-            runninghorseImg.classList.remove('active');
+        // 更新角色高亮
+        function updateCharacterHighlight(active) {
+            // 預設兩個都變暗
+            horseImg.classList.remove('active');
             bookwormImg.classList.remove('active');
             
-            if (activeId === 'runninghorse') {
-                runninghorseImg.classList.add('active');
-            } else if (activeId === 'bookworm') {
+            if (active === 'horse') {
+                horseImg.classList.add('active');
+            } else if (active === 'bookworm') {
                 bookwormImg.classList.add('active');
             }
         }
 
-        // 刷新對話框內容
-        function updateDialogue() {
-            if (currentStepIndex < storySteps.length) {
-                const step = storySteps[currentStepIndex];
-                speakerNameEl.innerText = step.speaker;
-                messageTextEl.innerText = step.text;
+        // 更新對話框內容
+        function updateDialogue(stepIndex) {
+            if (stepIndex < storySteps.length) {
+                const step = storySteps[stepIndex];
+                speakerNameEl.textContent = step.speaker;
+                messageTextEl.textContent = step.text;
                 updateCharacterHighlight(step.activeCharacter);
+                // 確保對話框可見
+                dialogueBox.style.display = 'block';
+                isSummaryVisible = false;
             } else {
-                // 所有對話結束 -> 顯示總結畫面 (第四步總結)
-                showSummary();
+                // 所有對話結束 -> 顯示總結畫面
+                showSummaryScreen();
             }
         }
 
-        // 顯示總結畫面，並且讓 Matching Game 入口出現
-        function showSummary() {
-            storyCompleted = true;
-            // 隱藏對話框
+        // 顯示總結畫面並隱藏對話框
+        function showSummaryScreen() {
             dialogueBox.style.display = 'none';
-            // 移除角色高亮 (畫面乾淨)
-            updateCharacterHighlight(null);
-            // 顯示總結畫面
             summaryScreen.style.display = 'flex';
+            isSummaryVisible = true;
+            // 將兩個角色都淡化（無高亮）
+            horseImg.classList.remove('active');
+            bookwormImg.classList.remove('active');
         }
 
-        // 處理下一步 (點擊箭頭或點擊畫面區域)
-        function goToNext() {
-            if (storyCompleted) return;
+        // 處理下一步 (點擊箭頭)
+        function nextStep() {
+            if (isSummaryVisible) {
+                // 如果總結畫面已經顯示，點擊箭頭無效（箭頭已被隱藏）
+                return;
+            }
             
-            if (currentStepIndex < storySteps.length) {
-                // 還沒到最後一個對話
-                currentStepIndex++;
-                if (currentStepIndex < storySteps.length) {
-                    // 還有下一句對話
-                    updateDialogue();
+            if (currentStep < storySteps.length) {
+                currentStep++;
+                if (currentStep < storySteps.length) {
+                    updateDialogue(currentStep);
                 } else {
-                    // 對話結束 -> 展示總結畫面 (第四步總結)
-                    showSummary();
+                    // 已經是最後一段對話結束，顯示總結畫面
+                    showSummaryScreen();
                 }
             } else {
                 // 理論上不會進來，但安全起見
-                showSummary();
+                showSummaryScreen();
             }
         }
 
-        // 進入 Matching Game (跳轉到原本的遊戲頁面)
-        function enterMatchingGame() {
-            // 根據需求，跳轉到主要的 Matching Game html (study mission 頁面)
-            // 這裡跳轉到目前正在運行的主遊戲頁面 (假設檔案名稱為 mission_game.html 或直接替換成目前遊戲)
-            // 因為主遊戲在同個目錄下命名為 index_mission.html 或其他，但為符合運作，指定到當前的遊戲頁面 (可改成實際名稱)
-            // 此處直接跳轉到 matching game 主畫面 (使用者目前的遊戲頁面，請確保相對路徑正確)
-            // 為了彈性，我們指向當前頁面同層的 "matching_game.html" ，但依照對話提供的遊戲主程式，我們可以讓它重新載入遊戲頁面。
-            // 由於你原本遊戲在另一個html程式碼，此處我將它連到原本遊戲的html檔案名稱: 假設為 "study_mission.html"
-            // 若需要整合在同一個專案，你之後可改成對應檔名。這裡先使用相對路徑 './' 下的遊戲主頁面，你也可以指定。
-            window.location.href = 'game.html';   // 請根據實際主遊戲檔案名稱修改，目前預設為 'game.html'
+        // 開始 Matching Game
+        function startMatchingGame() {
+            // 跳轉到 Matching Game 的 HTML 頁面（根據你的需求，這裡跳轉到原本的遊戲頁面）
+            // 假設遊戲頁面檔案名稱為 index.html 或 camera_game.html，請依照實際修改
+            window.location.href = 'index.html';  // 可改成遊戲頁面名稱
         }
 
-        // 綁定事件: 箭頭按鈕
-        nextBtn.addEventListener('click', (e) => {
+        // 綁定箭頭按鈕事件
+        nextBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            goToNext();
+            nextStep();
         });
         
-        // 為了方便觸控，點擊對話框區域也可以視為下一句 (但避免按鈕重複觸發)
-        dialogueBox.addEventListener('click', (e) => {
-            // 如果點擊的是按鈕本身就不要重複觸發
-            if (e.target === nextBtn) return;
-            goToNext();
+        // 同時支援點擊對話框任意處觸發下一句（RPG 常見體驗）
+        dialogueBox.addEventListener('click', function(e) {
+            // 避免點擊到箭頭時觸發兩次（但箭頭已經有獨立事件）
+            if (e.target === nextBtn || nextBtn.contains(e.target)) {
+                return;
+            }
+            nextStep();
         });
 
-        // 開始遊戲按鈕
-        startGameBtn.addEventListener('click', (e) => {
+        // 開始遊戲按鈕事件
+        startGameBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            enterMatchingGame();
+            startMatchingGame();
         });
 
-        // 預先設置圖片載入失敗時的替代處理：如果圖片不存在則顯示簡單文字占位，但不影響體驗
-        // 同時確保角色默認高亮第一幕 (跑馬)
+        // 初始化第一段對話
         function initStory() {
-            currentStepIndex = 0;
-            storyCompleted = false;
-            dialogueBox.style.display = 'block';
+            currentStep = 0;
+            updateDialogue(0);
             summaryScreen.style.display = 'none';
-            updateDialogue();
+            dialogueBox.style.display = 'block';
+            isSummaryVisible = false;
+        }
+
+        // 如果本地圖片載入失敗，使用 placeholder 確保顯示（不中斷體驗）
+        function preloadImages() {
+            const horseImgElement = document.getElementById('runningHorse');
+            const wormImgElement = document.getElementById('bookworm');
             
-            // 如果圖片加載失敗，至少保留佔位效果
-            runninghorseImg.onerror = function() {
+            // 監測跑馬圖片載入錯誤，若無圖則保留透明效果但維持佈局
+            horseImgElement.onerror = function() {
+                this.style.backgroundColor = '#c0a080';
                 this.style.objectFit = 'contain';
-                this.style.backgroundColor = '#cfc5a0';
                 this.alt = '跑馬';
             };
-            bookwormImg.onerror = function() {
+            wormImgElement.onerror = function() {
+                this.style.backgroundColor = '#a8c9a0';
                 this.style.objectFit = 'contain';
-                this.style.backgroundColor = '#cfc5a0';
                 this.alt = '書蟲';
             };
+            
+            // 背景圖若找不到也不影響主要體驗
+            const bgDiv = document.querySelector('.background');
+            const testBg = new Image();
+            testBg.onerror = function() {
+                // 如果 study area.png 不存在，保持備援色
+                bgDiv.style.backgroundColor = '#d9e6b3';
+            };
+            testBg.src = 'study area.png';
         }
-        
-        // 啟動劇情
+
+        // 執行初始化
         initStory();
+        preloadImages();
+        
+        // 避免觸控時頁面縮放
+        document.addEventListener('touchmove', function(e) {
+            if (e.target.closest('.pixel-dialogue') || e.target.closest('#summary-screen')) {
+                // 允許滾動但基本上沒滾動需求
+            }
+        }, { passive: false });
     </script>
 </body>
 </html>
