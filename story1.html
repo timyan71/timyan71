@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Match AR! - 故事序章：書蟲與跑馬</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pixel-border: #4a5d23;
+            --pixel-bg: #f5f7d1;
+            --pixel-accent: #a8d56f;
+            --pixel-text: #2d4a22;
+            --dialogue-bg: #fffef0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--pixel-bg);
+            font-family: 'VT323', monospace;
+            touch-action: manipulation;
+        }
+
+        /* ========= 背景圖片 (studyarea.png) ========= */
+        .game-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('studyarea.png') no-repeat center center;
+            background-size: cover;
+            filter: brightness(0.95) contrast(1.05);
+            z-index: -2;
+        }
+        
+        /* 備援背景：若 studyarea.png 不存在，使用相近的暖色底圖 */
+        .game-bg::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #8baa6e;
+            opacity: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* 像素網格疊加層 (復古感) */
+        .pixel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(to right, rgba(70, 70, 40, 0.12) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(70, 70, 40, 0.12) 1px, transparent 1px);
+            background-size: 16px 16px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* 左右角色容器 (像素風格擺放) */
+        .character-stage {
+            position: absolute;
+            bottom: 22vh;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 0 6%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .char-card {
+            width: 40vw;
+            max-width: 260px;
+            transition: all 0.2s steps(3);
+            filter: drop-shadow(4px 6px 0 rgba(0,0,0,0.2));
+        }
+
+        .char-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+            filter: brightness(0.75) grayscale(0.3);
+            transform: scale(0.92);
+            transition: all 0.18s steps(4);
+        }
+
+        /* 說話中的角色會變亮 + 微放大 */
+        .char-card.active .char-img {
+            filter: brightness(1) drop-shadow(0 0 6px #f9e0a0);
+            transform: scale(1.02);
+        }
+
+        /* ========= RPG 經典對話框 (像素粗框) ========= */
+        .dialogue-box {
+            position: absolute;
+            bottom: 24px;
+            left: 5%;
+            width: 90%;
+            background: var(--dialogue-bg);
+            border: 5px solid var(--pixel-border);
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.2);
+            padding: 18px 20px 20px 20px;
+            z-index: 30;
+            transition: all 0.1s ease;
+        }
+
+        /* 名字標籤 (像素小牌子) */
+        .speaker-tag {
+            position: absolute;
+            top: -22px;
+            left: 16px;
+            background: var(--pixel-accent);
+            padding: 4px 18px;
+            border: 3px solid var(--pixel-border);
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e1f;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 3px 3px 0 #3b4d1e;
+        }
+
+        .dialogue-text {
+            font-size: 28px;
+            line-height: 1.28;
+            color: var(--pixel-text);
+            word-break: break-word;
+            min-height: 90px;
+            padding-right: 40px;
+            font-weight: 500;
+        }
+
+        /* 右側箭頭指示 (下一句) */
+        .next-arrow {
+            position: absolute;
+            right: 20px;
+            bottom: 16px;
+            font-size: 28px;
+            color: #7c9f4a;
+            font-weight: bold;
+            animation: bouncePixel 0.5s steps(2) infinite;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: monospace;
+            z-index: 35;
+        }
+
+        @keyframes bouncePixel {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(6px); }
+        }
+
+        /* 最終按鈕區塊 (START 按鈕) */
+        .start-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(245, 247, 209, 0.96);
+            backdrop-filter: blur(2px);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .start-card {
+            background: #fff6df;
+            border: 6px solid var(--pixel-border);
+            padding: 30px 20px;
+            width: 80%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 12px 12px 0 #3a4d1e;
+        }
+
+        .start-title {
+            font-size: 38px;
+            color: #b34e1a;
+            margin-bottom: 18px;
+            letter-spacing: 2px;
+        }
+
+        .start-message {
+            font-size: 26px;
+            color: var(--pixel-text);
+            margin-bottom: 32px;
+            line-height: 1.3;
+        }
+
+        .btn-go {
+            font-family: 'VT323', monospace;
+            font-size: 32px;
+            background: var(--pixel-accent);
+            color: #1f3a12;
+            border: 4px solid var(--pixel-border);
+            padding: 12px 28px;
+            cursor: pointer;
+            box-shadow: 6px 6px 0 #2e4018;
+            transition: 0.04s linear;
+            font-weight: bold;
+        }
+
+        .btn-go:active {
+            transform: translate(3px, 3px);
+            box-shadow: 2px 2px 0 #2e4018;
+        }
+
+        /* 手機觸控優化 */
+        @media (max-width: 640px) {
+            .dialogue-text { font-size: 22px; }
+            .speaker-tag { font-size: 20px; top: -20px; padding: 2px 14px; }
+            .character-stage { bottom: 18vh; }
+            .char-card { max-width: 200px; }
+            .next-arrow { font-size: 32px; right: 16px; bottom: 12px; }
+        }
+
+        /* 點擊區域全畫面 (但按鈕獨立) */
+        .click-catcher {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 20;
+            background: transparent;
+            pointer-events: auto;
+        }
+
+        /* 避免按鈕區域被遮擋 */
+        .next-arrow, .btn-go {
+            pointer-events: auto;
+            position: relative;
+            z-index: 45;
+        }
+        
+        footer {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 背景 studyarea.png -->
+    <div class="game-bg"></div>
+    <div class="pixel-overlay"></div>
+
+    <!-- 角色舞台 (左側跑馬 / 右側書蟲) -->
+    <div class="character-stage">
+        <!-- 左：跑馬 (Running Horse) -->
+        <div class="char-card" id="horseChar">
+            <img class="char-img" id="horseImg" src="跑馬01-bad.png" alt="Running Horse" onerror="this.src='https://placehold.co/400x400/6b4c3b/eedd99?text=HORSE'">
+        </div>
+        <!-- 右：書蟲 (Bookworm) -->
+        <div class="char-card" id="wormChar">
+            <img class="char-img" id="wormImg" src="書蟲01-norm.png" alt="Bookworm" onerror="this.src='https://placehold.co/400x400/7a9f4a/ffffcc?text=WORM'">
+        </div>
+    </div>
+
+    <!-- RPG 對話框 -->
+    <div class="dialogue-box" id="dialogueBox">
+        <div class="speaker-tag" id="speakerName">跑馬</div>
+        <div class="dialogue-text" id="dialogueMsg">Norrrrr——(lying on the ground painfully)T^T</div>
+        <div class="next-arrow" id="nextBtn">➡️</div>
+    </div>
+
+    <!-- 最終 START 面板 (對話結束後出現) -->
+    <div class="start-panel" id="startPanel">
+        <div class="start-card">
+            <div class="start-title">📖 書蟲的決心</div>
+            <div class="start-message">「必須找出真相！」<br>開始匹配挑戰吧！</div>
+            <button class="btn-go" id="goMatchBtn">▶ START MATCHING GAME</button>
+        </div>
+    </div>
+
+    <!-- 全域點擊區 (點畫面任一處前進對話，但箭頭按鈕也獨立監聽) -->
+    <div class="click-catcher" id="globalClickCatcher"></div>
+
+    <script>
+        // ---------- 故事流程定義 (嚴格按照需求) ----------
+        // 共三個對話段落 + 之後顯示 START 按鈕
+        // step0: 跑馬 (左側) 對話
+        // step1: 書蟲 (右側) 「Hi— where do the noise comes from?? I cannot see anyone!」
+        // step2: 書蟲 (右側) 「I think I should start searching!」
+        // 之後跳轉到 START MATCHING GAME 按鈕頁面
+        
+        const STORY_STEPS = [
+            {
+                speaker: "跑馬",
+                text: "Norrrrr——(lying on the ground painfully)T^T",
+                activeSide: "horse",    // 左側角色高亮
+                horseImgSrc: "跑馬01-bad.png",
+                wormImgSrc: "書蟲01-norm.png"
+            },
+            {
+                speaker: "書蟲",
+                text: "Hi— where do the noise comes from?? I cannot see anyone!",
+                activeSide: "worm",
+                horseImgSrc: "跑馬01-bad.png",
+                wormImgSrc: "書蟲01-norm.png"
+            },
+            {
+                speaker: "書蟲",
+                text: "I think I should start searching!",
+                activeSide: "worm",
+                horseImgSrc: "跑馬01-bad.png",
+                wormImgSrc: "書蟲01-norm.png"
+            }
+        ];
+
+        let currentStepIdx = 0;        // 目前對話索引 (0,1,2)
+        let isStoryFinished = false;    // 故事是否已完結 (顯示 start 面板)
+        let allowTransition = true;      // 避免快速連續點擊
+
+        // DOM 元素
+        const dialogueBox = document.getElementById('dialogueBox');
+        const speakerNameSpan = document.getElementById('speakerName');
+        const dialogueMsgSpan = document.getElementById('dialogueMsg');
+        const nextArrow = document.getElementById('nextBtn');
+        const startPanelDiv = document.getElementById('startPanel');
+        const goMatchBtn = document.getElementById('goMatchBtn');
+        const globalCatcher = document.getElementById('globalClickCatcher');
+        
+        // 角色卡片與圖片
+        const horseCard = document.getElementById('horseChar');
+        const wormCard = document.getElementById('wormChar');
+        const horseImg = document.getElementById('horseImg');
+        const wormImg = document.getElementById('wormImg');
+
+        // 輔助: 更新畫面上的角色高亮效果 (active 類別)
+        function updateCharacterHighlight(activeSide) {
+            // 移除兩個角色的 active 樣式
+            horseCard.classList.remove('active');
+            wormCard.classList.remove('active');
+            
+            if (activeSide === 'horse') {
+                horseCard.classList.add('active');
+            } else if (activeSide === 'worm') {
+                wormCard.classList.add('active');
+            }
+        }
+        
+        // 強制刷新角色圖片 (確保使用正確圖片)
+        function refreshCharacterImages(horseSrc, wormSrc) {
+            // 如果圖片來源不同才更新，避免重複觸發
+            if (horseImg.src !== horseSrc && horseSrc) {
+                horseImg.src = horseSrc;
+            }
+            if (wormImg.src !== wormSrc && wormSrc) {
+                wormImg.src = wormSrc;
+            }
+        }
+        
+        // 更新對話框內容 (依照當前 step)
+        function applyStepUI(step) {
+            if (!step) return;
+            speakerNameSpan.innerText = step.speaker;
+            dialogueMsgSpan.innerText = step.text;
+            // 更新高亮
+            updateCharacterHighlight(step.activeSide);
+            // 確保角色圖片正確 (以防萬一)
+            refreshCharacterImages(step.horseImgSrc, step.wormImgSrc);
+        }
+        
+        // 前進到下一句對話
+        function advanceStory() {
+            if (!allowTransition) return;
+            if (isStoryFinished) return;   // 已經顯示開始面板
+            
+            // 如果還有下一句對話
+            if (currentStepIdx + 1 < STORY_STEPS.length) {
+                currentStepIdx++;
+                const nextStep = STORY_STEPS[currentStepIdx];
+                applyStepUI(nextStep);
+                // 小震動效果增加回饋
+                dialogueBox.style.transform = "scale(0.99)";
+                setTimeout(() => { dialogueBox.style.transform = "scale(1)"; }, 60);
+            } 
+            else {
+                // 對話全部結束 (已經是最後一句，再點就要顯示開始面板)
+                if (currentStepIdx === STORY_STEPS.length - 1) {
+                    // 故事結束，顯示 START MATCHING GAME 面板，隱藏對話框
+                    finishStoryAndShowStart();
+                } else {
+                    // 安全防護: 理論上不會進來
+                    finishStoryAndShowStart();
+                }
+            }
+        }
+        
+        // 結束故事、隱藏對話框、顯示開始遊戲區塊
+        function finishStoryAndShowStart() {
+            if (isStoryFinished) return;
+            isStoryFinished = true;
+            
+            // 淡出對話框與箭頭
+            if (dialogueBox) {
+                dialogueBox.style.transition = "opacity 0.2s steps(4)";
+                dialogueBox.style.opacity = "0";
+                setTimeout(() => {
+                    dialogueBox.style.display = "none";
+                }, 180);
+            }
+            // 移除點擊捕獲器上的快速監聽 (但保留)
+            // 顯示 start 面板
+            if (startPanelDiv) {
+                startPanelDiv.style.display = "flex";
+                // 加入一點點像素動畫
+                startPanelDiv.style.animation = "none";
+                startPanelDiv.offsetHeight;
+                startPanelDiv.style.animation = "fadeInPixel 0.2s steps(4)";
+            }
+            // 角色依然保留，讓氣氛延續
+        }
+        
+        // 處理全域點擊 (對話框存在時，點擊觸發下一句)
+        function onGlobalClick(e) {
+            // 如果故事已經結束，不處理 (避免干擾 start 面板)
+            if (isStoryFinished) return;
+            // 避免點擊按鈕時觸發兩次 (但無傷大雅)
+            // 且如果點擊的是箭頭按鈕本身，為了避免重複，但在箭頭監聽中會先執行 advance 且阻止冒泡
+            advanceStory();
+        }
+        
+        // 箭頭按鈕獨立事件 (讓玩家也能按箭頭)
+        function onNextArrowClick(e) {
+            e.stopPropagation();
+            if (isStoryFinished) return;
+            advanceStory();
+        }
+        
+        // 跳轉到 matchgame.html
+        function goToMatchGame() {
+            // 添加音效感應沒有實際音檔，但模擬過場
+            const btn = document.getElementById('goMatchBtn');
+            if (btn) {
+                btn.style.transform = "scale(0.96)";
+                setTimeout(() => {
+                    window.location.href = "matchgame.html";
+                }, 80);
+            } else {
+                window.location.href = "matchgame.html";
+            }
+        }
+        
+        // 初始化載入圖片與預設故事狀態 (step 0)
+        function initStory() {
+            // 設定故事第一步驟 (索引 0)
+            const firstStep = STORY_STEPS[0];
+            if (firstStep) {
+                speakerNameSpan.innerText = firstStep.speaker;
+                dialogueMsgSpan.innerText = firstStep.text;
+                updateCharacterHighlight(firstStep.activeSide);
+                refreshCharacterImages(firstStep.horseImgSrc, firstStep.wormImgSrc);
+            }
+            currentStepIdx = 0;
+            isStoryFinished = false;
+            startPanelDiv.style.display = "none";
+            dialogueBox.style.display = "block";
+            dialogueBox.style.opacity = "1";
+            
+            // 確保角色圖片載入不會因404崩潰；已經加入 onerror fallback 在 img 屬性
+            // 如果本地圖片確實不存在，fallback 會顯示佔位圖，但無傷大雅。
+            
+            // 增加小細節：角色初始左側高亮 (horse)
+            horseCard.classList.add('active');
+            wormCard.classList.remove('active');
+        }
+        
+        // 綁定事件 (使用捕獲與冒泡相容)
+        function bindEvents() {
+            // 箭頭按鈕
+            if (nextArrow) {
+                nextArrow.removeEventListener('click', onNextArrowClick);
+                nextArrow.addEventListener('click', onNextArrowClick);
+            }
+            // 全域點擊層 (背景任意點擊)
+            if (globalCatcher) {
+                globalCatcher.removeEventListener('click', onGlobalClick);
+                globalCatcher.addEventListener('click', onGlobalClick);
+            }
+            // 開始匹配按鈕
+            if (goMatchBtn) {
+                goMatchBtn.removeEventListener('click', goToMatchGame);
+                goMatchBtn.addEventListener('click', goToMatchGame);
+            }
+            // 防止 start 面板內點擊冒泡到 global catcher
+            if (startPanelDiv) {
+                startPanelDiv.addEventListener('click', (e) => e.stopPropagation());
+            }
+        }
+        
+        // 當圖片無法載入時保留基本視覺 (內建 onerror)
+        function setupImageFallback() {
+            if (!horseImg.complete || horseImg.naturalWidth === 0) {
+                horseImg.onerror = () => {
+                    horseImg.src = "https://placehold.co/400x400/8B5A2B/F3E9DC?text=HORSE";
+                };
+            }
+            if (!wormImg.complete || wormImg.naturalWidth === 0) {
+                wormImg.onerror = () => {
+                    wormImg.src = "https://placehold.co/400x400/6A9C3E/F9F6D0?text=WORM";
+                };
+            }
+        }
+        
+        // 加上鍵盤支援 (Enter 或 右鍵也可以觸發下一句，符合直覺)
+        function onKeyPress(e) {
+            if (isStoryFinished) return;
+            if (e.key === 'ArrowRight' || e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                advanceStory();
+            }
+        }
+        
+        // 動畫輔助定義 (如果不存在就補)
+        function addKeyframes() {
+            if (!document.querySelector('#pixelFadeKeyframe')) {
+                const styleSheet = document.createElement("style");
+                styleSheet.id = "pixelFadeKeyframe";
+                styleSheet.textContent = `
+                    @keyframes fadeInPixel {
+                        0% { opacity: 0; transform: scale(0.96); }
+                        100% { opacity: 1; transform: scale(1); }
+                    }
+                `;
+                document.head.appendChild(styleSheet);
+            }
+        }
+        
+        // 確保背景圖 studyarea.png 設定正確且加上二次 fallback (若無法載入則保留深色)
+        function setBackgroundRobust() {
+            const bgDiv = document.querySelector('.game-bg');
+            if (bgDiv) {
+                // 檢查背景圖片是否有效 (簡單測試)
+                const testImg = new Image();
+                testImg.onerror = () => {
+                    // 如果 studyarea.png 無法載入，讓背景加上柔和補色
+                    bgDiv.style.backgroundColor = "#b7cf93";
+                    bgDiv.style.backgroundImage = "linear-gradient(145deg, #dde9bc, #b1cf7a)";
+                };
+                testImg.src = "studyarea.png";
+            }
+        }
+        
+        // 啟動
+        window.addEventListener('load', () => {
+            initStory();
+            bindEvents();
+            setupImageFallback();
+            setBackgroundRobust();
+            addKeyframes();
+            window.addEventListener('keydown', onKeyPress);
+            
+            // 增加適配手機震動感（無實際震動但點擊回饋）
+            const allClickZones = [nextArrow, globalCatcher];
+            allClickZones.forEach(el => {
+                if (el) {
+                    el.addEventListener('touchstart', (e) => {
+                        // 輕微視覺回饋
+                        if (dialogueBox && !isStoryFinished) {
+                            dialogueBox.style.transform = "scale(0.98)";
+                            setTimeout(() => {
+                                if(dialogueBox) dialogueBox.style.transform = "scale(1)";
+                            }, 70);
+                        }
+                    }, { passive: true });
+                }
+            });
+        });
+        
+        // 清理資源非必要，但保持乾淨
+        window.addEventListener('beforeunload', () => {
+            window.removeEventListener('keydown', onKeyPress);
+        });
+    </script>
+</body>
+</html>
