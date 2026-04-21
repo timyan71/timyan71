@@ -197,7 +197,7 @@
 <body>
 
     <div id="ui">SCORE: <span id="score">0</span></div>
-    <div id="timer-box">TIME: <span id="time">30</span>S</div>
+    <div id="timer-box">TIME: <span id="time">15</span>S</div>
     
     <div id="msg">
         <h2 id="status">CHALLENGE!</h2>
@@ -299,12 +299,12 @@
         winTriggered = false;
         dinoState = 'blue';
         score = 0;
-        timeLeft = 30;
+        timeLeft = 15;
         obstacles = [];
         frame = 0;
         dino.y = canvas.height / 2;
         scoreEl.innerText = "0";
-        timeEl.innerText = "30";
+        timeEl.innerText = "15";
         msgEl.style.display = 'none';
         clearInterval(timerInterval);
         timerInterval = setInterval(() => {
