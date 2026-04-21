@@ -136,12 +136,12 @@ function handleOrientation(event) {
         gameRunning = true;
         dinoState = 'blue';
         score = 0;
-        timeLeft = 60;
+        timeLeft = 30;
         obstacles = [];
         frame = 0;
         dino.y = canvas.height / 2;
         scoreEl.innerText = "0";
-        timeEl.innerText = "60";
+        timeEl.innerText = "30";
         msgEl.style.display = 'none';
         clearInterval(timerInterval);
         timerInterval = setInterval(() => {
@@ -202,7 +202,7 @@ function handleOrientation(event) {
         stopGame();
         dinoState = 'pink';
         statusEl.innerHTML = "<span class='success'>MISSION CLEAR!</span>";
-        subStatusEl.innerText = "YOU SURVIVED 60 SECS!";
+        subStatusEl.innerText = "YOU SURVIVED 30 SECS!";
         updateFinalFrame();
     }
 
