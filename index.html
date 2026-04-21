@@ -288,8 +288,6 @@
             border-color: #e2f6d4;
             box-shadow: inset 0 0 0 1px #b6e4a8, 3px 3px 0 #b6e4a8;
             margin-top: 20px;
-            font-size: 14px;
-            padding: 16px;
         }
         .btn-bookworm:active {
             background: #74c99f;
@@ -441,9 +439,8 @@
         </div>
 
         <div class="bottom-buttons">
-            <!-- 下一關按鈕 (僅在未完成全部關卡時顯示) -->
             <button class="btn" id="nextLevelBtn" onclick="nextLevel()" style="display:none">⏭ NEXT LEVEL</button>
-            <!-- 書蟲小遊戲按鈕：完成所有關卡後顯示，取代原本的 FINISH 按鈕 -->
+            <!-- 書蟲小遊戲按鈕：完成所有關卡後顯示 -->
             <button class="btn btn-bookworm" id="bookwormGameBtn" onclick="goToBookwormGame()" style="display:none">🐛 RUN WITH 書蟲 !</button>
         </div>
         
@@ -495,7 +492,7 @@
             isSubmitted: false,
             levelCompleted: false,
             gameActive: false,
-            allLevelsCompleted: false
+            allLevelsCompleted: false   // 新增：追蹤是否已完成全部關卡
         };
         
         const video = document.getElementById('video');
@@ -679,12 +676,11 @@
                 } else {
                     showToast("🎉 CONGRATULATIONS! MISSION COMPLETE!");
                 }
-                // 隱藏下一關按鈕
-                nextLevelBtn.style.display = 'none';
+                nextLevelBtn.textContent = "🏆 FINISH";
+                nextLevelBtn.style.display = 'block';
                 // 顯示書蟲小遊戲按鈕
                 bookwormGameBtn.style.display = 'block';
             } else {
-                // 未完成全部關卡，顯示下一關按鈕
                 nextLevelBtn.style.display = 'block';
                 nextLevelBtn.textContent = "⏭ NEXT LEVEL";
             }
@@ -699,8 +695,9 @@
         }
         
         function nextLevel() {
-            // 如果所有關卡已完成，不執行任何動作（按鈕已被隱藏，但保留安全檢查）
+            // 如果所有關卡已完成，點擊完成按鈕只顯示提示，不跳關
             if (gameState.allLevelsCompleted) {
+                showToast("🎉 ALL MISSIONS DONE! TRY THE BOOKWORM GAME!");
                 return;
             }
             
@@ -716,6 +713,12 @@
                 takePhotoBtn.disabled = false;
                 takePhotoBtn.textContent = "📸 CAPTURE";
                 startLevel();
+            } else {
+                // 這個分支理論上不會進來，因為 currentLevel === 5 時已在 submitMatch 處理
+                gameState.allLevelsCompleted = true;
+                bookwormGameBtn.style.display = 'block';
+                nextLevelBtn.textContent = "🏆 COMPLETE";
+                showToast("🎉 MISSION ACCOMPLISHED!");
             }
         }
         
