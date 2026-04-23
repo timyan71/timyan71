@@ -181,7 +181,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 地點畫面 - 純文字版本 */
+        /* 地點畫面 - 純文字版本，無標題 */
         .location-overlay {
             position: fixed;
             top: 0;
@@ -205,14 +205,6 @@
             text-align: center;
             box-shadow: 12px 12px 0 rgba(0, 0, 0, 0.3);
             animation: modalPop 0.4s ease-out;
-        }
-
-        .location-title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #d32f2f;
-            margin-bottom: 20px;
-            font-family: 'Courier New', monospace;
         }
 
         .location-message {
@@ -266,10 +258,9 @@
         </div>
     </div>
 
-    <!-- 地點畫面 - 純文字訊息，無圖片 -->
+    <!-- 地點畫面 - 純文字訊息，無標題 -->
     <div id="locationOverlay" class="location-overlay">
         <div class="location-box">
-            <div class="location-title">Next Location:</div>
             <div class="location-message">please move to the next location</div>
         </div>
     </div>
@@ -429,11 +420,10 @@
         }, 2000);
     }
 
-    // 顯示地點畫面（純文字訊息，無圖片、無按鈕）
+    // 顯示地點畫面（純文字訊息，無標題）
     function showLocationScreen() {
         const locationDiv = document.getElementById('locationOverlay');
         locationDiv.style.display = 'flex';
-        // 不加入任何按鈕，也沒有跳轉，純粹顯示「please move to the next location」
     }
 
     function winGame() {
